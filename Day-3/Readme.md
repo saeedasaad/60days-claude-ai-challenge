@@ -36,13 +36,7 @@ The response was broad and general. It provided common freelancing advice such a
 
 ### Screenshot
 
-
-
-
-
-```md
-`![No Role Output](./screenshots/no-role-output.png)`
-```
+![No Role Output](screenshots/no-role-output.png)
 
 ---
 
@@ -71,10 +65,7 @@ The advice was more business-oriented and focused on long-term growth.
 
 ### Screenshot
 
-
-```text
-screenshots/founder-output.png
-```
+![Founder Persona Output](screenshots/founder-output.png)
 
 ---
 
@@ -103,10 +94,7 @@ The advice was practical and engineering-focused.
 
 ### Screenshot
 
-
-```text
-screenshots/developer-output.png
-```
+![Developer Persona Output](screenshots/developer-output.png)
 
 ---
 
