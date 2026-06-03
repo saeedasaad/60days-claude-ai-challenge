@@ -37,8 +37,11 @@ The response was broad and general. It provided common freelancing advice such a
 ### Screenshot
 
 
-```text
-screenshots/no-role-output.png
+
+
+
+```md
+`![No Role Output](./screenshots/no-role-output.png)`
 ```
 
 ---
