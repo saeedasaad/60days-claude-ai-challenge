@@ -143,7 +143,7 @@ Day 5 demonstrated how powerful Context Engineering can be. By providing meaning
 Day-4/
 ├── Readme.md
 └── screenshots/
-├── career-roadmap.png
-└── claude-roadmap-chat.png
+├── prompt_A_Output.png
+└── prompt_B_Output.png
 
 ```
