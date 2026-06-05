@@ -137,8 +137,8 @@ This technique will be valuable for future career planning, project management, 
 
 ```
 
-Day4/
-├── day4.md
+Day-4/
+├── Readme.md
 └── screenshots/
 ├── career-roadmap.png
 └── claude-roadmap-chat.png

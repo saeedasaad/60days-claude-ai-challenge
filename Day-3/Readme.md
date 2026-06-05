@@ -130,7 +130,7 @@ Role-Based Prompting is one of the most practical techniques for improving the q
 ## Folder Structure
 
 ```text
-Day3/
+Day-3/
 │
 ├── Readme.md
 │
