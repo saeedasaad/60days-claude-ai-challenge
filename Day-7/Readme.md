@@ -23,7 +23,9 @@ Day-7/
 └── screenshots/
     ├── original_resume.png
     ├── resume_analysis.png
-    └── optimized_resume.png
+    ├── optimized_resume_part1.png    
+    ├── optimized_resume_part2.png
+    └──optimized_resume_part3.png 
 ```
 
 ---
@@ -45,7 +47,23 @@ Claude refined my resume by focusing on:
 
 The final output was a more structured and impactful resume aligned with modern hiring standards.
 
+---
+## Screenshots
 
+### 1. Original Resume
+
+![original_resume_part1](./screenshots/original_resume_part_1.png)
+![original_resume_part2](./screenshots/original_resume_part_2.png)
+
+### 2. Resume Analysis
+
+![resume_analysis](./screenshots/resume_analysis.png)
+
+### 3. Optimized Resume
+
+![optimized_resume_part1](./screenshots/optimized_resume_part1.png)
+![optimized_resume_part2](./screenshots/optimized_resume_part2.png)
+![optimized_resume_part3](./screenshots/optimized_resume_part3.png)
 ---
 
 ##  Key Improvements
