@@ -12,7 +12,7 @@ Learn how to use AI to create a **complete job search and personal branding tool
 - Career growth opportunities
 ---
  
-## 🛠 Tools Used
+## Tools Used
  
 | Tool | Purpose |
 |------|---------|
