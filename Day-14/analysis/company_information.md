@@ -33,4 +33,6 @@
 ---
 
 ## Notes
-> This company is extremely early-stage. Without funding transparency or salary disclosure, candidates carry significant financial and career risk by joining at this phase.
+> This company is extremely early-stage. Without funding transparency or salary disclosure, candidates carry significant financial and career risk by joining at this phase.   
+
+
