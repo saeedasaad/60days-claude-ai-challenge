@@ -137,7 +137,6 @@ Reviewed AI-generated predictions and suggestions for:
 
 ![Forecast](./screenshots/forecast.png)
 
-### Complete Report
 
 ![Full Report](./screenshots/full_report_part%204.png)
 
