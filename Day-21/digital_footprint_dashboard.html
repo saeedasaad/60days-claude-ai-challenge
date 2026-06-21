@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Footprint Analysis Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f7f2;
+      color: #2c2c2a;
+      line-height: 1.6;
+    }
+    .dashboard { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 28px; font-weight: 500; margin-bottom: 0.5rem; }
+    .header p { font-size: 14px; color: #888780; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+    .metric-card { background: #f1efeb; border-radius: 8px; padding: 1rem; text-align: center; }
+    .metric-label { font-size: 12px; color: #888780; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 32px; font-weight: 500; }
+    .metric-unit { font-size: 12px; color: #888780; margin-top: 0.25rem; }
+    .section { margin-bottom: 2.5rem; }
+    .section h2 { font-size: 18px; font-weight: 500; margin-bottom: 1rem; }
+    .section-card { background: white; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.25rem; }
+    .row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+    .row-label { font-size: 13px; color: #888780; min-width: 140px; }
+    .bar-container { flex: 1; background: #f1efeb; border-radius: 4px; height: 24px; overflow: hidden; position: relative; }
+    .bar { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; color: white; font-weight: 500; }
+    .risk-high { background: linear-gradient(to right, rgba(226, 75, 74, 0.8), rgba(226, 75, 74, 0.8)); }
+    .risk-medium { background: linear-gradient(to right, rgba(221, 182, 49, 0.8), rgba(221, 182, 49, 0.8)); }
+    .risk-low { background: linear-gradient(to right, rgba(99, 153, 34, 0.8), rgba(99, 153, 34, 0.8)); }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+    .heatmap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 1rem; }
+    .heat-cell { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .heat-critical { background: rgba(226, 75, 74, 0.9); }
+    .heat-high { background: rgba(226, 122, 74, 0.8); }
+    .heat-medium { background: rgba(221, 182, 49, 0.8); }
+    .heat-low { background: rgba(153, 183, 98, 0.8); }
+    .heat-minimal { background: rgba(99, 153, 34, 0.8); }
+    .twin-item { display: flex; gap: 12px; padding: 12px; background: #f1efeb; border-radius: 8px; margin-bottom: 8px; }
+    .twin-icon { font-size: 24px; flex-shrink: 0; }
+    .twin-content { flex: 1; }
+    .twin-label { font-size: 13px; color: #888780; }
+    .twin-value { font-size: 14px; font-weight: 500; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; margin-right: 6px; margin-bottom: 6px; }
+    .badge-fact { background: #e6f1fb; color: #185fa5; }
+    .badge-estimate { background: #faeeda; color: #854f0b; }
+    .improvement-item { background: #f1efeb; border-left: 3px solid #378add; border-radius: 4px; padding: 12px; margin-bottom: 10px; }
+    .improvement-priority { font-size: 11px; font-weight: 500; text-transform: uppercase; color: #378add; margin-bottom: 4px; }
+    .improvement-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .improvement-desc { font-size: 12px; color: #888780; }
+    .radar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 1rem; }
+    .radar-item { text-align: center; padding: 12px; background: #f1efeb; border-radius: 8px; }
+    .radar-value { font-size: 24px; font-weight: 500; }
+    .radar-label { font-size: 12px; color: #888780; margin-top: 4px; }
+    .verdict { background: #f1efeb; border-left: 4px solid #ba7517; border-radius: 4px; padding: 1.25rem; }
+    .verdict-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+    .verdict-text { font-size: 14px; color: #5f5e5a; line-height: 1.7; }
+    .info-text { font-size: 12px; color: #888780; margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7; }
+    @media (max-width: 768px) {
+      .dashboard { padding: 1rem; }
+      .header h1 { font-size: 24px; }
+      .metric-value { font-size: 24px; }
+      .heatmap { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h1>Digital Footprint Analysis</h1>
+      <p>Complete privacy assessment of your digital ecosystem</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="metric-card">
+        <div class="metric-label">Digital Footprint Score</div>
+        <div class="metric-value" style="color: #E24B4A;">68</div>
+        <div class="metric-unit">🟠 Significant exposure</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Privacy Score</div>
+        <div class="metric-value" style="color: #BA7517;">54</div>
+        <div class="metric-unit">🟠 Fair protection</div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="metric-card">
+        <div class="metric-label">Services Used</div>
+        <div class="metric-value">15</div>
+        <div class="metric-unit">applications</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Parent Companies</div>
+        <div class="metric-value">11</div>
+        <div class="metric-unit">entities</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Ecosystem Concentration</div>
+        <div class="metric-value">35%</div>
+        <div class="metric-unit">high risk</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Company Exposure Ranking</h2>
+      <div class="section-card">
+        <div class="row">
+          <div class="row-label">Google/Alphabet</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 100%;">4 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Meta</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 50%;">2 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">ByteDance</div>
+          <div class="bar-container"><div class="bar risk-medium" style="width: 33%;">1 service</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Snap Inc.</div>
+          <div class="bar-container"><div class="bar risk-medium" style="width: 33%;">1 service</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Tencent/Krafton</div>
+          <div class="bar-container"><div class="bar risk-medium" style="width: 33%;">1 service</div></div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background: rgba(226, 75, 74, 0.8);"></div> Critical risk</div>
+          <div class="legend-item"><div class="legend-color" style="background: rgba(221, 182, 49, 0.8);"></div> Medium risk</div>
+          <div class="legend-item"><div class="legend-color" style="background: rgba(153, 183, 98, 0.8);"></div> Low risk</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Exposure Heatmap by Category</h2>
+      <div class="section-card">
+        <div style="font-size: 13px; color: #888780; margin-bottom: 1rem;">Risk levels across your digital domains</div>
+        <div class="heatmap">
+          <div class="heat-cell heat-critical">Social</div>
+          <div class="heat-cell heat-critical">Search</div>
+          <div class="heat-cell heat-high">Commerce</div>
+          <div class="heat-cell heat-medium">Gaming</div>
+          <div class="heat-cell heat-low">Media</div>
+        </div>
+        <div class="info-text">
+          <strong>Fact:</strong> Social platforms (Instagram, Snapchat, TikTok) have highest data collection capacity. <strong>Estimate:</strong> Your engagement patterns likely profile your interests, location, and spending habits across these networks.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Data Collection Matrix</h2>
+      <div class="section-card">
+        <div class="row">
+          <div class="row-label">Location tracking</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 95%;">9 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Behavioral profiling</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 87%;">13 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Contact/social mapping</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 80%;">12 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Purchase history</div>
+          <div class="bar-container"><div class="bar risk-medium" style="width: 40%;">2 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Device identifiers</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 100%;">15 services</div></div>
+        </div>
+        <div class="info-text">
+          <span class="badge badge-fact">FACT</span> All 15 services collect device identifiers and IP addresses.
+          <span class="badge badge-estimate">ESTIMATE</span> Based on service policies, behavioral profiling likely includes interests, connection frequency, and implicit preferences.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Risk Radar — Critical Exposure Points</h2>
+      <div class="section-card">
+        <div class="radar">
+          <div class="radar-item">
+            <div class="radar-value" style="color: #E24B4A;">87%</div>
+            <div class="radar-label">Tracking surface</div>
+          </div>
+          <div class="radar-item">
+            <div class="radar-value" style="color: #BA7517;">72%</div>
+            <div class="radar-label">Data sharing</div>
+          </div>
+          <div class="radar-item">
+            <div class="radar-value" style="color: #639922;">45%</div>
+            <div class="radar-label">Privacy controls</div>
+          </div>
+        </div>
+        <div class="info-text">
+          <strong>Key findings:</strong> Your ecosystem emphasizes free platforms (social, search, cloud storage), which monetize user data. High concentration with Google and Meta creates significant dependency.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Digital Twin Profile</h2>
+      <div class="section-card">
+        <div style="font-size: 13px; color: #888780; margin-bottom: 1rem;">Estimated data constructs companies have compiled about you</div>
+        <div class="twin-item">
+          <div class="twin-icon">📍</div>
+          <div class="twin-content">
+            <div class="twin-label">Location & mobility</div>
+            <div class="twin-value"><span class="badge badge-estimate">ESTIMATE</span> Inferred from IP geolocation, device signals, and search queries</div>
+          </div>
+        </div>
+        <div class="twin-item">
+          <div class="twin-icon">👥</div>
+          <div class="twin-content">
+            <div class="twin-label">Social graph</div>
+            <div class="twin-value"><span class="badge badge-fact">FACT</span> Contact lists, followers, messaging patterns across 8 services</div>
+          </div>
+        </div>
+        <div class="twin-item">
+          <div class="twin-icon">🎮</div>
+          <div class="twin-content">
+            <div class="twin-label">Entertainment preferences</div>
+            <div class="twin-value"><span class="badge badge-estimate">ESTIMATE</span> Gaming activity (PUBG, Roblox), music taste (Spotify), video consumption (YouTube, TikTok)</div>
+          </div>
+        </div>
+        <div class="twin-item">
+          <div class="twin-icon">🛍️</div>
+          <div class="twin-content">
+            <div class="twin-label">Shopping behavior</div>
+            <div class="twin-value"><span class="badge badge-estimate">ESTIMATE</span> Browsing on Amazon/Meesho; search queries indicate purchase intent</div>
+          </div>
+        </div>
+        <div class="twin-item">
+          <div class="twin-icon">💬</div>
+          <div class="twin-content">
+            <div class="twin-label">Communication patterns</div>
+            <div class="twin-value"><span class="badge badge-fact">FACT</span> Message metadata (timing, frequency) via WhatsApp, iMessage, Discord</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Most Valuable Data Assets</h2>
+      <div class="section-card">
+        <div class="row">
+          <div class="row-label">Email address</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 100%;">Used in 15/15 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Phone number</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 87%;">Used in 13 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Browsing history</div>
+          <div class="bar-container"><div class="bar risk-high" style="width: 93%;">Tracked by 14 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Payment information</div>
+          <div class="bar-container"><div class="bar risk-medium" style="width: 40%;">Stored in 6 services</div></div>
+        </div>
+        <div class="row">
+          <div class="row-label">Biometric data</div>
+          <div class="bar-container"><div class="bar risk-low" style="width: 20%;">Collected by 3 services</div></div>
+        </div>
+        <div class="info-text">
+          These assets are the most frequently used identifiers for targeted advertising, identity verification, and behavioral analysis.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Privacy Improvement Plan</h2>
+      <div class="section-card">
+        <div class="improvement-item">
+          <div class="improvement-priority">🔴 Critical</div>
+          <div class="improvement-title">Audit Google & Meta connections</div>
+          <div class="improvement-desc">Review and revoke third-party app access in Google Account and Meta settings. Disable tracking pixels and cross-site advertising. These two entities control 5 of your 15 services.</div>
+        </div>
+        <div class="improvement-item">
+          <div class="improvement-priority">🟠 High</div>
+          <div class="improvement-title">Strengthen account security</div>
+          <div class="improvement-desc">Enable two-factor authentication on Google, Meta, and Amazon. Use passkeys (biometric/hardware) where available. Consider a password manager for unique, strong passwords across all 15 services.</div>
+        </div>
+        <div class="improvement-item">
+          <div class="improvement-priority">🟠 High</div>
+          <div class="improvement-title">Reduce social media exposure</div>
+          <div class="improvement-desc">Reduce posting frequency on Instagram, Snapchat, TikTok. Limit audience visibility. Delete old posts with location/personal data. Disable location services for these apps.</div>
+        </div>
+        <div class="improvement-item">
+          <div class="improvement-priority">🟡 Medium</div>
+          <div class="improvement-title">Review privacy settings by category</div>
+          <div class="improvement-desc"><strong>Social:</strong> Set profiles to private, review follower lists. <strong>Search:</strong> Pause activity on Google, use privacy-focused search (DuckDuckGo). <strong>Gaming:</strong> Review PUBG/Roblox account permissions and in-app purchases.</div>
+        </div>
+        <div class="improvement-item">
+          <div class="improvement-priority">🟡 Medium</div>
+          <div class="improvement-title">Evaluate alternative services</div>
+          <div class="improvement-desc">Consider privacy-focused alternatives: Signal instead of WhatsApp, ProtonMail instead of Gmail, DuckDuckGo instead of Google Search, LibreOffice instead of Google Docs.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Final Verdict</h2>
+      <div class="verdict">
+        <div class="verdict-title">⚠️ Moderate to Significant Privacy Risk</div>
+        <div class="verdict-text">
+          You maintain a digital footprint across 15 applications operated by 11 parent companies. Your highest-risk exposures are behavioral profiling on social platforms (Instagram, Snapchat, TikTok) and search/analytics tracking via Google. While your ecosystem is typical for an active internet user, the concentration of data collection with Meta and Google—combined with limited privacy controls you've likely enabled—suggests moderate vulnerability to targeted advertising, data breaches, and identity risks.
+          <br><br>
+          <strong>Key recommendations:</strong> (1) Audit third-party access on Google and Meta accounts immediately. (2) Enable 2FA across all services, starting with payment and email accounts. (3) Reduce data sharing with social platforms through stricter privacy settings. (4) Monitor your privacy checkups (Google Privacy Checkup, Meta Privacy Center) quarterly. (5) Consider selectively migrating to privacy-respecting alternatives for communication and search.
+          <br><br>
+          <em><strong>Note:</strong> This assessment is based on publicly documented data collection practices. Actual data practices may vary or include undisclosed activities. This analysis contains estimates based on service terms and inferred user behavior—not direct access to private databases.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
