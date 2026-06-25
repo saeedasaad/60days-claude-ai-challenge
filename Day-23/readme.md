@@ -218,19 +218,10 @@ Saved all outputs and organized project assets inside the Day-23 folder.
 
 ### Customer Discovery & Buyer Persona
 
-![Customer Discovery](./screenshots/customer_blueprint_part1.png)
+![Customer Discovery](./screenshots/customer_blueprint.png)
 
 Claude generated detailed customer personas, ideal customer profiles, and customer pain points.
 
-### Customer Journey & MVP Recommendations
-
-![Customer Journey & MVP](./screenshots/customer_blueprint_part2.png)
-
-The report included customer journey mapping, buying triggers, objections, and MVP recommendations.
-
-### Feature Prioritization & Founder Action Plan
-
-![Feature Prioritization](./screenshots/customer_blueprint_part3.png)
 
 Claude provided MoSCoW prioritization, pricing hypotheses, risk analysis, and an actionable founder roadmap.
 
