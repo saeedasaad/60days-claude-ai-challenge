@@ -1,279 +1,803 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<style>
-  @page { margin: 18mm 16mm 18mm 16mm; }
-  * { box-sizing: border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; color:#1c2233; font-size: 11px; line-height:1.5; margin:0; }
-  h1 { font-size: 22px; color:#0d2b4e; margin:0 0 6px 0; }
-  h2 { font-size: 17px; color:#0d2b4e; border-bottom:2px solid #1f8a70; padding-bottom:4px; margin:22px 0 10px 0; }
-  h3 { font-size: 13px; color:#155d8b; margin:16px 0 6px 0; }
-  p { margin: 4px 0 8px 0; }
-  ul { margin:4px 0 10px 18px; padding:0; }
-  li { margin-bottom:3px; }
-  .tag { display:inline-block; background:#eaf3f0; color:#1f8a70; font-size:9px; font-weight:bold; padding:2px 8px; border-radius:10px; letter-spacing:0.5px; text-transform:uppercase; }
-  table { width:100%; border-collapse:collapse; margin:8px 0 14px 0; font-size:10px; }
-  th { background:#0d2b4e; color:#fff; text-align:left; padding:6px 7px; font-size:9.5px; }
-  td { border:1px solid #d8dee5; padding:6px 7px; vertical-align:top; }
-  tr:nth-child(even) td { background:#f7f9fb; }
-  .pgbreak { page-break-before: always; }
-  .cover { height: 245mm; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
-  .cover .kicker { color:#1f8a70; letter-spacing:2px; font-weight:bold; font-size:12px; text-transform:uppercase; margin-bottom:14px;}
-  .cover h1 { font-size:32px; max-width:480px; }
-  .cover .sub { font-size:14px; color:#4a5568; margin-top:10px; max-width:420px; }
-  .cover .meta { margin-top:60px; font-size:10.5px; color:#6b7280; border-top:1px solid #d8dee5; padding-top:14px; width:300px; }
-  .verdictbox { border:2px solid #d8a417; background:#fdf6e3; border-radius:8px; padding:14px 16px; margin:14px 0; }
-  .verdictbox.green { border-color:#1f8a70; background:#eaf7f1; }
-  .verdictbox.amber { border-color:#d8a417; background:#fdf6e3; }
-  .verdictbox.orange { border-color:#d9711a; background:#fdece1; }
-  .verdictbox.red { border-color:#c0392b; background:#fbeaea; }
-  .grid2 { display:flex; gap:14px; }
-  .grid2 > div { flex:1; }
-  .card { border:1px solid #d8dee5; border-radius:6px; padding:10px 12px; background:#fbfcfd; margin-bottom:10px; }
-  .scorebar-row { display:flex; align-items:center; margin-bottom:8px; }
-  .scorebar-label { width:150px; font-size:10px; font-weight:bold; }
-  .scorebar-track { flex:1; background:#e7eaf0; border-radius:5px; height:10px; margin:0 8px; overflow:hidden; }
-  .scorebar-fill { height:10px; border-radius:5px; background:#1f8a70; }
-  .scorebar-val { width:32px; font-size:10px; font-weight:bold; text-align:right; }
-  .toc-row { display:flex; justify-content:space-between; border-bottom:1px dotted #ccc; padding:6px 0; font-size:12px; }
-  .small { font-size:9.5px; color:#5b6573; }
-  .pitchbox { background:#0d2b4e; color:#fff; border-radius:8px; padding:16px 18px; font-size:12px; line-height:1.6; }
-</style>
+  <meta charset="utf-8">
+  <style>
+    @page {
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #1c2233;
+      font-size: 11px;
+      line-height: 1.5;
+      margin: 0;
+      padding-left: 100px;
+      padding-right: 100px;
+      padding-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #0d2b4e;
+      margin: 0 0 6px 0;
+    }
+
+    h2 {
+      font-size: 17px;
+      color: #0d2b4e;
+      border-bottom: 2px solid #1f8a70;
+      padding-bottom: 4px;
+      margin: 22px 0 10px 0;
+    }
+
+    h3 {
+      font-size: 13px;
+      color: #155d8b;
+      margin: 16px 0 6px 0;
+    }
+
+    p {
+      margin: 4px 0 8px 0;
+    }
+
+    ul {
+      margin: 4px 0 10px 18px;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #eaf3f0;
+      color: #1f8a70;
+      font-size: 9px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px 0;
+      font-size: 10px;
+    }
+
+    th {
+      background: #0d2b4e;
+      color: #fff;
+      text-align: left;
+      padding: 6px 7px;
+      font-size: 9.5px;
+    }
+
+    td {
+      border: 1px solid #d8dee5;
+      padding: 6px 7px;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: #f7f9fb;
+    }
+
+    .pgbreak {
+      page-break-before: always;
+    }
+
+    .cover {
+      height: 245mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .cover .kicker {
+      color: #1f8a70;
+      letter-spacing: 2px;
+      font-weight: bold;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .cover h1 {
+      font-size: 32px;
+      max-width: 480px;
+    }
+
+    .cover .sub {
+      font-size: 14px;
+      color: #4a5568;
+      margin-top: 10px;
+      max-width: 420px;
+    }
+
+    .cover .meta {
+      margin-top: 60px;
+      font-size: 10.5px;
+      color: #6b7280;
+      border-top: 1px solid #d8dee5;
+      padding-top: 14px;
+      width: 300px;
+    }
+
+    .verdictbox {
+      border: 2px solid #d8a417;
+      background: #fdf6e3;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 14px 0;
+    }
+
+    .verdictbox.green {
+      border-color: #1f8a70;
+      background: #eaf7f1;
+    }
+
+    .verdictbox.amber {
+      border-color: #d8a417;
+      background: #fdf6e3;
+    }
+
+    .verdictbox.orange {
+      border-color: #d9711a;
+      background: #fdece1;
+    }
+
+    .verdictbox.red {
+      border-color: #c0392b;
+      background: #fbeaea;
+    }
+
+    .grid2 {
+      display: flex;
+      gap: 14px;
+    }
+
+    .grid2>div {
+      flex: 1;
+    }
+
+    .card {
+      border: 1px solid #d8dee5;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fbfcfd;
+      margin-bottom: 10px;
+    }
+
+    .scorebar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .scorebar-label {
+      width: 150px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .scorebar-track {
+      flex: 1;
+      background: #e7eaf0;
+      border-radius: 5px;
+      height: 10px;
+      margin: 0 8px;
+      overflow: hidden;
+    }
+
+    .scorebar-fill {
+      height: 10px;
+      border-radius: 5px;
+      background: #1f8a70;
+    }
+
+    .scorebar-val {
+      width: 32px;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .toc-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted #ccc;
+      padding: 6px 0;
+      font-size: 12px;
+    }
+
+    .small {
+      font-size: 9.5px;
+      color: #5b6573;
+    }
+
+    .pitchbox {
+      background: #0d2b4e;
+      color: #fff;
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ============ TITLE PAGE ============ -->
-<div class="cover">
-  <div class="kicker">Business Strategy &amp; Investability Report</div>
-  <h1>AI-Powered Business Management Platform for South Asian SMEs</h1>
-  <div class="sub">A revenue-first, distribution-first review of the Customer &amp; MVP Blueprint — testing whether the business behind the product can become sustainable.</div>
-  <div class="meta">
-    Prepared for: Founder Decision-Making<br>
-    Source document: Customer &amp; MVP Blueprint (Derived from Startup Validation Report, June 2026)<br>
-    Report date: June 25, 2026<br>
-    Prepared by: AI Co-Founder &amp; Growth Strategy Advisor
+  <!-- ============ TITLE PAGE ============ -->
+  <div class="cover">
+    <div class="kicker">Business Strategy &amp; Investability Report</div>
+    <h1>AI-Powered Business Management Platform for South Asian SMEs</h1>
+    <div class="sub">A revenue-first, distribution-first review of the Customer &amp; MVP Blueprint — testing whether
+      the business behind the product can become sustainable.</div>
+    <div class="meta">
+      Prepared for: Founder Decision-Making<br>
+      Source document: Customer &amp; MVP Blueprint (Derived from Startup Validation Report, June 2026)<br>
+      Report date: June 25, 2026<br>
+      Prepared by: AI Co-Founder &amp; Growth Strategy Advisor
+    </div>
   </div>
-</div>
 
-<!-- ============ TABLE OF CONTENTS ============ -->
-<div class="pgbreak">
-<h2>Table of Contents</h2>
-<div class="toc-row"><span>1. Executive Summary</span><span>3</span></div>
-<div class="toc-row"><span>2. Startup Summary &amp; Core Assumptions</span><span>3</span></div>
-<div class="toc-row"><span>3. Business Reality Check</span><span>4</span></div>
-<div class="toc-row"><span>4. Business Strategy Report</span><span>5</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.1 Business Model Canvas</span><span>5</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.2 Revenue &amp; Pricing Strategy</span><span>6</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.3 Go-To-Market Strategy</span><span>6</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.4 Customer Acquisition Strategy</span><span>7</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.5 First 100 Users Plan</span><span>7</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.6 Competitive Position &amp; Moat</span><span>8</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.7 Reverse SWOT Analysis</span><span>8</span></div>
-<div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.8 Investor One-Liner &amp; 30-Second Pitch</span><span>9</span></div>
-<div class="toc-row"><span>5. Investment Scorecard</span><span>9</span></div>
-<div class="toc-row"><span>6. Visual Dashboard</span><span>10</span></div>
-<div class="toc-row"><span>7. Founder Action Sheet — Top 10 Actions</span><span>11</span></div>
-<div class="toc-row"><span>8. Sustainability Verdict</span><span>11</span></div>
-</div>
+  <!-- ============ TABLE OF CONTENTS ============ -->
+  <div class="pgbreak">
+    <h2>Table of Contents</h2>
+    <div class="toc-row"><span>1. Executive Summary</span><span>3</span></div>
+    <div class="toc-row"><span>2. Startup Summary &amp; Core Assumptions</span><span>3</span></div>
+    <div class="toc-row"><span>3. Business Reality Check</span><span>4</span></div>
+    <div class="toc-row"><span>4. Business Strategy Report</span><span>5</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.1 Business Model Canvas</span><span>5</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.2 Revenue &amp; Pricing Strategy</span><span>6</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.3 Go-To-Market Strategy</span><span>6</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.4 Customer Acquisition Strategy</span><span>7</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.5 First 100 Users Plan</span><span>7</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.6 Competitive Position &amp; Moat</span><span>8</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.7 Reverse SWOT Analysis</span><span>8</span></div>
+    <div class="toc-row"><span>&nbsp;&nbsp;&nbsp;4.8 Investor One-Liner &amp; 30-Second Pitch</span><span>9</span></div>
+    <div class="toc-row"><span>5. Investment Scorecard</span><span>9</span></div>
+    <div class="toc-row"><span>6. Visual Dashboard</span><span>10</span></div>
+    <div class="toc-row"><span>7. Founder Action Sheet — Top 10 Actions</span><span>11</span></div>
+    <div class="toc-row"><span>8. Sustainability Verdict</span><span>11</span></div>
+  </div>
 
-<!-- ============ EXECUTIVE SUMMARY ============ -->
-<div class="pgbreak">
-<h2>1. Executive Summary</h2>
-<p>The startup is building affordable, mobile-first business management software (attendance, sales tracking, basic CRM) for micro and small businesses in Pakistan — retailers, gyms, education centers, distributors, and hospitality operators currently running on WhatsApp, spreadsheets, and memory. The founder has strong domain and technical fit, the pain point is severe and consistently reported, and the addressable market is large on paper. However, the business has <strong>zero paying customers, no tested pricing, and only 10-15 informal conversations</strong> to date. This report evaluates the business — not just the product — against revenue, distribution, evidence, and execution, and finds a real but currently <strong>unvalidated</strong> business model with one significant structural risk: the proposed price ($10-15/month) sits above the ICP's own stated budget ($2-10/month).</p>
+  <!-- ============ EXECUTIVE SUMMARY ============ -->
+  <div class="pgbreak">
+    <h2>1. Executive Summary</h2>
+    <p>The startup is building affordable, mobile-first business management software (attendance, sales tracking, basic
+      CRM) for micro and small businesses in Pakistan — retailers, gyms, education centers, distributors, and
+      hospitality operators currently running on WhatsApp, spreadsheets, and memory. The founder has strong domain and
+      technical fit, the pain point is severe and consistently reported, and the addressable market is large on paper.
+      However, the business has <strong>zero paying customers, no tested pricing, and only 10-15 informal
+        conversations</strong> to date. This report evaluates the business — not just the product — against revenue,
+      distribution, evidence, and execution, and finds a real but currently <strong>unvalidated</strong> business model
+      with one significant structural risk: the proposed price ($10-15/month) sits above the ICP's own stated budget
+      ($2-10/month).</p>
 
-<h2>2. Startup Summary &amp; Core Assumptions</h2>
-<h3>Startup in 8 bullets</h3>
-<ul>
-<li>Target customer: owners of 5-50 employee SMEs in retail, gyms/services, education, distribution, and hospitality in Pakistan (India/Bangladesh secondary).</li>
-<li>Core pain: 3-4 hours/day lost to manual reconciliation, inventory blind spots, no visibility into staff performance or theft/shrinkage.</li>
-<li>Current alternative: WhatsApp, email, and spreadsheets — not Zoho/Odoo/SAP, which are seen as too expensive and complex.</li>
-<li>MVP scope: Attendance tracking, sales tracking with auto-reconciliation, and basic CRM — mobile-first, Urdu-localized.</li>
-<li>Explicitly descoped for now: BI/analytics dashboards, full inventory management, multi-country payments/compliance, API/white-label tooling.</li>
-<li>Pricing hypothesis: freemium entry, $10-15/month premium tier, $20-30/month "Pro" tier once validated; target ARPC ≈ $180/year.</li>
-<li>Traction to date: 10-15 informal customer conversations, <strong>0 paying customers</strong>, no tested pricing, no live beta.</li>
-<li>Founder profile: strong founder-market fit (7.6/10), bootstrapped and part-time — a capacity constraint on execution speed.</li>
-</ul>
+    <h2>2. Startup Summary &amp; Core Assumptions</h2>
+    <h3>Startup in 8 bullets</h3>
+    <ul>
+      <li>Target customer: owners of 5-50 employee SMEs in retail, gyms/services, education, distribution, and
+        hospitality in Pakistan (India/Bangladesh secondary).</li>
+      <li>Core pain: 3-4 hours/day lost to manual reconciliation, inventory blind spots, no visibility into staff
+        performance or theft/shrinkage.</li>
+      <li>Current alternative: WhatsApp, email, and spreadsheets — not Zoho/Odoo/SAP, which are seen as too expensive
+        and complex.</li>
+      <li>MVP scope: Attendance tracking, sales tracking with auto-reconciliation, and basic CRM — mobile-first,
+        Urdu-localized.</li>
+      <li>Explicitly descoped for now: BI/analytics dashboards, full inventory management, multi-country
+        payments/compliance, API/white-label tooling.</li>
+      <li>Pricing hypothesis: freemium entry, $10-15/month premium tier, $20-30/month "Pro" tier once validated; target
+        ARPC ≈ $180/year.</li>
+      <li>Traction to date: 10-15 informal customer conversations, <strong>0 paying customers</strong>, no tested
+        pricing, no live beta.</li>
+      <li>Founder profile: strong founder-market fit (7.6/10), bootstrapped and part-time — a capacity constraint on
+        execution speed.</li>
+    </ul>
 
-<h3>Assumptions extracted from the Blueprint</h3>
-<table>
-<tr><th style="width:18%;">Category</th><th>Stated Assumption</th></tr>
-<tr><td><strong>Customer</strong></td><td>Owner/manager is the single decision-maker, decides in 1-2 weeks, is moderately tech-comfortable (WhatsApp/email-literate) but wary of "complex software."</td></tr>
-<tr><td><strong>MVP</strong></td><td>Three features (attendance, sales tracking, CRM) are sufficient to earn a paying relationship; inventory and analytics can wait.</td></tr>
-<tr><td><strong>Value Proposition</strong></td><td>Time saved + error reduction + staff/stock visibility is worth paying for, framed as "save 10+ hrs/week."</td></tr>
-<tr><td><strong>Pricing</strong></td><td>A freemium-to-$10-15/month upgrade path will convert, even though the stated ICP budget is $2-10/month.</td></tr>
-<tr><td><strong>Revenue</strong></td><td>Blended ARPC of ~$180/year across a freemium base, achieved primarily through the Premium tier.</td></tr>
-<tr><td><strong>GTM</strong></td><td>Google search, WhatsApp referral, and LinkedIn content will drive awareness for a non-digital-native, low-English, owner-operator audience.</td></tr>
-</table>
-</div>
+    <h3>Assumptions extracted from the Blueprint</h3>
+    <table>
+      <tr>
+        <th style="width:18%;">Category</th>
+        <th>Stated Assumption</th>
+      </tr>
+      <tr>
+        <td><strong>Customer</strong></td>
+        <td>Owner/manager is the single decision-maker, decides in 1-2 weeks, is moderately tech-comfortable
+          (WhatsApp/email-literate) but wary of "complex software."</td>
+      </tr>
+      <tr>
+        <td><strong>MVP</strong></td>
+        <td>Three features (attendance, sales tracking, CRM) are sufficient to earn a paying relationship; inventory and
+          analytics can wait.</td>
+      </tr>
+      <tr>
+        <td><strong>Value Proposition</strong></td>
+        <td>Time saved + error reduction + staff/stock visibility is worth paying for, framed as "save 10+ hrs/week."
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Pricing</strong></td>
+        <td>A freemium-to-$10-15/month upgrade path will convert, even though the stated ICP budget is $2-10/month.</td>
+      </tr>
+      <tr>
+        <td><strong>Revenue</strong></td>
+        <td>Blended ARPC of ~$180/year across a freemium base, achieved primarily through the Premium tier.</td>
+      </tr>
+      <tr>
+        <td><strong>GTM</strong></td>
+        <td>Google search, WhatsApp referral, and LinkedIn content will drive awareness for a non-digital-native,
+          low-English, owner-operator audience.</td>
+      </tr>
+    </table>
+  </div>
 
-<!-- ============ BUSINESS REALITY CHECK ============ -->
-<div class="pgbreak">
-<h2>3. Business Reality Check</h2>
+  <!-- ============ BUSINESS REALITY CHECK ============ -->
+  <div class="pgbreak">
+    <h2>3. Business Reality Check</h2>
 
-<h3>Who pays?</h3>
-<p>The shop/gym/center <strong>owner</strong> pays — not staff, not customers. This is a single-threaded buyer with no procurement committee, which is good for sales velocity, but it also means the entire revenue line depends on one person's personal risk tolerance with their own cash, in a segment that already told researchers their budget ceiling is $2-10/month.</p>
+    <h3>Who pays?</h3>
+    <p>The shop/gym/center <strong>owner</strong> pays — not staff, not customers. This is a single-threaded buyer with
+      no procurement committee, which is good for sales velocity, but it also means the entire revenue line depends on
+      one person's personal risk tolerance with their own cash, in a segment that already told researchers their budget
+      ceiling is $2-10/month.</p>
 
-<h3>Why do they pay?</h3>
-<p>Not for "software" — for hours returned and losses prevented. The willingness to pay is tied to a felt, quantifiable cost: 3-4 hours/day of reconciliation, late-discovered stockouts, and shrinkage exposure. The pitch that converts is rupee-denominated ("this catches PKR X of leakage a month"), not feature-denominated ("this has a CRM module").</p>
+    <h3>Why do they pay?</h3>
+    <p>Not for "software" — for hours returned and losses prevented. The willingness to pay is tied to a felt,
+      quantifiable cost: 3-4 hours/day of reconciliation, late-discovered stockouts, and shrinkage exposure. The pitch
+      that converts is rupee-denominated ("this catches PKR X of leakage a month"), not feature-denominated ("this has a
+      CRM module").</p>
 
-<h3>How will they discover the product?</h3>
-<p>The Blueprint leans on Google search, WhatsApp referral, and LinkedIn. For this ICP, LinkedIn is a weak channel — Pakistani retail/gym/education SME owners are not a LinkedIn-native audience; that channel mainly reaches white-collar professionals, not shop owners. The stronger, underused channels are: local trade/market associations, distributors and wholesalers who already touch these shops, accountants/bookkeepers who serve them, and WhatsApp Business groups organized by trade or locality.</p>
+    <h3>How will they discover the product?</h3>
+    <p>The Blueprint leans on Google search, WhatsApp referral, and LinkedIn. For this ICP, LinkedIn is a weak channel —
+      Pakistani retail/gym/education SME owners are not a LinkedIn-native audience; that channel mainly reaches
+      white-collar professionals, not shop owners. The stronger, underused channels are: local trade/market
+      associations, distributors and wholesalers who already touch these shops, accountants/bookkeepers who serve them,
+      and WhatsApp Business groups organized by trade or locality.</p>
 
-<h3>Biggest growth risks</h3>
-<ul>
-<li><strong>Channel mismatch</strong> — the planned awareness channels don't match where the ICP actually spends attention.</li>
-<li><strong>Founder bandwidth</strong> — bootstrapped, part-time, solo; high-touch onboarding (the Blueprint's own retention strategy) does not scale without help.</li>
-<li><strong>Incumbent response</strong> — Zoho/Odoo already have low-cost tiers and local resellers; "cheaper and simpler" is a moving target, not a fixed moat.</li>
-<li><strong>Single-vertical proof not yet established</strong> — five verticals (retail, gyms, education, distribution, hospitality) are targeted simultaneously with no single vertical proven first.</li>
-</ul>
+    <h3>Biggest growth risks</h3>
+    <ul>
+      <li><strong>Channel mismatch</strong> — the planned awareness channels don't match where the ICP actually spends
+        attention.</li>
+      <li><strong>Founder bandwidth</strong> — bootstrapped, part-time, solo; high-touch onboarding (the Blueprint's own
+        retention strategy) does not scale without help.</li>
+      <li><strong>Incumbent response</strong> — Zoho/Odoo already have low-cost tiers and local resellers; "cheaper and
+        simpler" is a moving target, not a fixed moat.</li>
+      <li><strong>Single-vertical proof not yet established</strong> — five verticals (retail, gyms, education,
+        distribution, hospitality) are targeted simultaneously with no single vertical proven first.</li>
+    </ul>
 
-<h3>Biggest monetization risks</h3>
-<ul>
-<li><strong>Price-budget mismatch</strong> — Premium tier is priced at $10-15/month against a stated ICP budget of $2-10/month; this is the single largest unvalidated assumption in the entire plan.</li>
-<li><strong>Freemium-trap risk</strong> — a free, "good enough" attendance + sales tier may be where price-sensitive owners simply stay forever, with no real product-led pressure to upgrade.</li>
-<li><strong>Local payment collection is sequenced too late</strong> — JazzCash/EasyPaisa is "Should Have," but without a frictionless local rail, even a willing payer may not convert into a collected dollar.</li>
-<li><strong>High-touch onboarding cost</strong> vs. a $2-15/month price point may not cover the founder's time at scale, even if customers convert.</li>
-</ul>
+    <h3>Biggest monetization risks</h3>
+    <ul>
+      <li><strong>Price-budget mismatch</strong> — Premium tier is priced at $10-15/month against a stated ICP budget of
+        $2-10/month; this is the single largest unvalidated assumption in the entire plan.</li>
+      <li><strong>Freemium-trap risk</strong> — a free, "good enough" attendance + sales tier may be where
+        price-sensitive owners simply stay forever, with no real product-led pressure to upgrade.</li>
+      <li><strong>Local payment collection is sequenced too late</strong> — JazzCash/EasyPaisa is "Should Have," but
+        without a frictionless local rail, even a willing payer may not convert into a collected dollar.</li>
+      <li><strong>High-touch onboarding cost</strong> vs. a $2-15/month price point may not cover the founder's time at
+        scale, even if customers convert.</li>
+    </ul>
 
-<h3>Weak assumptions to validate immediately</h3>
-<table>
-<tr><th style="width:30%;">Assumption</th><th>Why it's weak</th><th>How to test in 2 weeks</th></tr>
-<tr><td>Owners will pay $10-15/month</td><td>Contradicts the ICP's own stated $2-10 budget ceiling — an internal inconsistency in the research itself.</td><td>Ask for a refundable deposit or first-month payment upfront during the beta, not after a free period.</td></tr>
-<tr><td>Stated pain = willingness to pay</td><td>10-15 conversations are opinions, not transactions; pain is easy to agree with, hard to pay for.</td><td>Convert 5 of those 10-15 contacts into a paid pilot this week.</td></tr>
-<tr><td>LinkedIn drives awareness</td><td>Audience mismatch with non-digital-native shop owners.</td><td>Run a 2-week spend test split between a WhatsApp/trade-association push and a small LinkedIn budget; compare cost per qualified lead.</td></tr>
-<tr><td>Freemium converts to paid</td><td>Free tiers for cash-constrained micro-SMEs often become permanent, not a funnel.</td><td>Pilot a "free 30-day trial then mandatory pay" model against the freemium model with two small cohorts.</td></tr>
-</table>
-</div>
+    <h3>Weak assumptions to validate immediately</h3>
+    <table>
+      <tr>
+        <th style="width:30%;">Assumption</th>
+        <th>Why it's weak</th>
+        <th>How to test in 2 weeks</th>
+      </tr>
+      <tr>
+        <td>Owners will pay $10-15/month</td>
+        <td>Contradicts the ICP's own stated $2-10 budget ceiling — an internal inconsistency in the research itself.
+        </td>
+        <td>Ask for a refundable deposit or first-month payment upfront during the beta, not after a free period.</td>
+      </tr>
+      <tr>
+        <td>Stated pain = willingness to pay</td>
+        <td>10-15 conversations are opinions, not transactions; pain is easy to agree with, hard to pay for.</td>
+        <td>Convert 5 of those 10-15 contacts into a paid pilot this week.</td>
+      </tr>
+      <tr>
+        <td>LinkedIn drives awareness</td>
+        <td>Audience mismatch with non-digital-native shop owners.</td>
+        <td>Run a 2-week spend test split between a WhatsApp/trade-association push and a small LinkedIn budget; compare
+          cost per qualified lead.</td>
+      </tr>
+      <tr>
+        <td>Freemium converts to paid</td>
+        <td>Free tiers for cash-constrained micro-SMEs often become permanent, not a funnel.</td>
+        <td>Pilot a "free 30-day trial then mandatory pay" model against the freemium model with two small cohorts.</td>
+      </tr>
+    </table>
+  </div>
 
-<!-- ============ BUSINESS STRATEGY REPORT ============ -->
-<div class="pgbreak">
-<h2>4. Business Strategy Report</h2>
+  <!-- ============ BUSINESS STRATEGY REPORT ============ -->
+  <div class="pgbreak">
+    <h2>4. Business Strategy Report</h2>
 
-<h3>4.1 Business Model Canvas</h3>
-<table>
-<tr><th style="width:20%;">Block</th><th>Detail</th></tr>
-<tr><td><strong>Customer Segments</strong></td><td>Owner-operators of 5-50 employee retail, gym/services, education, distribution, and hospitality SMEs in Pakistan (India/Bangladesh secondary); single-decision-maker, price-sensitive, low-English, WhatsApp-native.</td></tr>
-<tr><td><strong>Value Propositions</strong></td><td>Recover 3-4 hours/day of manual admin; stop late-discovered stock and cash discrepancies; see staff sales/attendance at a glance; in Urdu, mobile-first, far cheaper and simpler than Zoho/Odoo/SAP.</td></tr>
-<tr><td><strong>Channels</strong></td><td>WhatsApp referral and trade/market associations (primary, untapped); distributor/accountant partnerships; founder-led direct sales; Google search and a simple landing page (secondary); LinkedIn (low priority for this ICP).</td></tr>
-<tr><td><strong>Customer Relationships</strong></td><td>High-touch, founder-led onboarding for the first cohorts; WhatsApp-based support (matches existing behavior); community/peer trust via local trade networks; NPS-driven iteration.</td></tr>
-<tr><td><strong>Revenue Streams</strong></td><td>Monthly subscription (Premium $10-15, Pro $20-30); annual prepay discount to improve cash collection and reduce churn measurement noise; potential transaction-linked revenue once JazzCash/EasyPaisa is live.</td></tr>
-<tr><td><strong>Key Resources</strong></td><td>Founder's domain + technical fit; early customer relationships from the 10-15 conversations; Urdu-localized, mobile-first product; trust/data-security messaging.</td></tr>
-<tr><td><strong>Key Activities</strong></td><td>Structured paid-pilot sales; building the 3-feature MVP; onboarding design for fast "day 1-3" wins; local payment integration; NPS and churn tracking.</td></tr>
-<tr><td><strong>Key Partnerships</strong></td><td>JazzCash/EasyPaisa (payments); trade/market associations and distributors (distribution); local accountants/bookkeepers (referral and trust); a co-founder or part-time operator (capacity).</td></tr>
-<tr><td><strong>Cost Structure</strong></td><td>Founder time (largest "cost," currently unpriced); hosting/dev tooling; payment-gateway fees; high-touch onboarding/support time per customer, which must stay below the price point to remain sustainable at $2-15/month ARPU.</td></tr>
-</table>
+    <h3>4.1 Business Model Canvas</h3>
+    <table>
+      <tr>
+        <th style="width:20%;">Block</th>
+        <th>Detail</th>
+      </tr>
+      <tr>
+        <td><strong>Customer Segments</strong></td>
+        <td>Owner-operators of 5-50 employee retail, gym/services, education, distribution, and hospitality SMEs in
+          Pakistan (India/Bangladesh secondary); single-decision-maker, price-sensitive, low-English, WhatsApp-native.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Value Propositions</strong></td>
+        <td>Recover 3-4 hours/day of manual admin; stop late-discovered stock and cash discrepancies; see staff
+          sales/attendance at a glance; in Urdu, mobile-first, far cheaper and simpler than Zoho/Odoo/SAP.</td>
+      </tr>
+      <tr>
+        <td><strong>Channels</strong></td>
+        <td>WhatsApp referral and trade/market associations (primary, untapped); distributor/accountant partnerships;
+          founder-led direct sales; Google search and a simple landing page (secondary); LinkedIn (low priority for this
+          ICP).</td>
+      </tr>
+      <tr>
+        <td><strong>Customer Relationships</strong></td>
+        <td>High-touch, founder-led onboarding for the first cohorts; WhatsApp-based support (matches existing
+          behavior); community/peer trust via local trade networks; NPS-driven iteration.</td>
+      </tr>
+      <tr>
+        <td><strong>Revenue Streams</strong></td>
+        <td>Monthly subscription (Premium $10-15, Pro $20-30); annual prepay discount to improve cash collection and
+          reduce churn measurement noise; potential transaction-linked revenue once JazzCash/EasyPaisa is live.</td>
+      </tr>
+      <tr>
+        <td><strong>Key Resources</strong></td>
+        <td>Founder's domain + technical fit; early customer relationships from the 10-15 conversations; Urdu-localized,
+          mobile-first product; trust/data-security messaging.</td>
+      </tr>
+      <tr>
+        <td><strong>Key Activities</strong></td>
+        <td>Structured paid-pilot sales; building the 3-feature MVP; onboarding design for fast "day 1-3" wins; local
+          payment integration; NPS and churn tracking.</td>
+      </tr>
+      <tr>
+        <td><strong>Key Partnerships</strong></td>
+        <td>JazzCash/EasyPaisa (payments); trade/market associations and distributors (distribution); local
+          accountants/bookkeepers (referral and trust); a co-founder or part-time operator (capacity).</td>
+      </tr>
+      <tr>
+        <td><strong>Cost Structure</strong></td>
+        <td>Founder time (largest "cost," currently unpriced); hosting/dev tooling; payment-gateway fees; high-touch
+          onboarding/support time per customer, which must stay below the price point to remain sustainable at
+          $2-15/month ARPU.</td>
+      </tr>
+    </table>
 
-<h3>4.2 Revenue &amp; Pricing Strategy</h3>
-<p>The single biggest fix needed is closing the gap between the <strong>stated ICP budget ($2-10/month)</strong> and the <strong>proposed Premium price ($10-15/month)</strong>. Three moves to de-risk this before treating $180/year ARPC as a real number:</p>
-<ul>
-<li><strong>Replace freemium with a "paid trial."</strong> A 14-30 day free period that requires a card or mobile-wallet commitment up front filters for real intent far better than an open-ended free tier, and avoids creating a permanent "good enough, free" tier for cash-constrained owners.</li>
-<li><strong>Anchor on savings, not features.</strong> Price the Premium tier explicitly against the time/loss it recovers (e.g., "less than the cost of one hour of your own time per week") rather than against feature count.</li>
-<li><strong>Test per-store pricing, not flat pricing.</strong> Malik runs 3 stores; a flat $10-15/month may be cheap for a 3-store owner and expensive for a single-shop owner. A modest per-additional-store add-on (after one included store) both lifts ARPU for multi-location owners and keeps the entry price inside the stated $2-10 band for single-location owners.</li>
-<li><strong>Pull JazzCash/EasyPaisa from "Should Have" to "Must Have" for the paid pilot</strong> — a willing payer who cannot pay in two taps is a lost payer in this market.</li>
-</ul>
+    <h3>4.2 Revenue &amp; Pricing Strategy</h3>
+    <p>The single biggest fix needed is closing the gap between the <strong>stated ICP budget ($2-10/month)</strong> and
+      the <strong>proposed Premium price ($10-15/month)</strong>. Three moves to de-risk this before treating $180/year
+      ARPC as a real number:</p>
+    <ul>
+      <li><strong>Replace freemium with a "paid trial."</strong> A 14-30 day free period that requires a card or
+        mobile-wallet commitment up front filters for real intent far better than an open-ended free tier, and avoids
+        creating a permanent "good enough, free" tier for cash-constrained owners.</li>
+      <li><strong>Anchor on savings, not features.</strong> Price the Premium tier explicitly against the time/loss it
+        recovers (e.g., "less than the cost of one hour of your own time per week") rather than against feature count.
+      </li>
+      <li><strong>Test per-store pricing, not flat pricing.</strong> Malik runs 3 stores; a flat $10-15/month may be
+        cheap for a 3-store owner and expensive for a single-shop owner. A modest per-additional-store add-on (after one
+        included store) both lifts ARPU for multi-location owners and keeps the entry price inside the stated $2-10 band
+        for single-location owners.</li>
+      <li><strong>Pull JazzCash/EasyPaisa from "Should Have" to "Must Have" for the paid pilot</strong> — a willing
+        payer who cannot pay in two taps is a lost payer in this market.</li>
+    </ul>
 
-<h3>4.3 Go-To-Market Strategy</h3>
-<p>Distribution should be treated as the primary unknown to de-risk, ahead of any further feature building.</p>
-<ul>
-<li><strong>Pick one vertical and one city first.</strong> Retail (clothing/general stores) in Karachi is the best-evidenced starting point — it is where the existing persona, conversations, and risk pattern (shrinkage, multi-store reconciliation) already live.</li>
-<li><strong>Go where owners already gather.</strong> Trade/market associations, wholesaler and distributor networks, and local Chambers of Commerce are higher-leverage than Google or LinkedIn for this buyer.</li>
-<li><strong>Make WhatsApp the primary channel, not an afterthought.</strong> Owners already trust WhatsApp; demo via WhatsApp video, support via WhatsApp, referral via WhatsApp groups.</li>
-<li><strong>Use the founder as the sales motion for the first 90 days.</strong> No paid acquisition spend should scale until a manually-sold cohort proves people will actually pay $10-15/month.</li>
-</ul>
+    <h3>4.3 Go-To-Market Strategy</h3>
+    <p>Distribution should be treated as the primary unknown to de-risk, ahead of any further feature building.</p>
+    <ul>
+      <li><strong>Pick one vertical and one city first.</strong> Retail (clothing/general stores) in Karachi is the
+        best-evidenced starting point — it is where the existing persona, conversations, and risk pattern (shrinkage,
+        multi-store reconciliation) already live.</li>
+      <li><strong>Go where owners already gather.</strong> Trade/market associations, wholesaler and distributor
+        networks, and local Chambers of Commerce are higher-leverage than Google or LinkedIn for this buyer.</li>
+      <li><strong>Make WhatsApp the primary channel, not an afterthought.</strong> Owners already trust WhatsApp; demo
+        via WhatsApp video, support via WhatsApp, referral via WhatsApp groups.</li>
+      <li><strong>Use the founder as the sales motion for the first 90 days.</strong> No paid acquisition spend should
+        scale until a manually-sold cohort proves people will actually pay $10-15/month.</li>
+    </ul>
 
-<h3>4.4 Customer Acquisition Strategy</h3>
-<table>
-<tr><th style="width:24%;">Tactic</th><th>Why it fits this ICP</th><th>Cost profile</th></tr>
-<tr><td>Door-to-door / market-walk sales</td><td>Owners trust a face-to-face pitch more than a digital ad; matches the "wary of complex software" persona.</td><td>Founder time only; highest CAC efficiency for first cohort.</td></tr>
-<tr><td>Trade association &amp; distributor partnerships</td><td>Reaches dozens of owners through one trusted relationship.</td><td>Low cash cost; relationship-building time.</td></tr>
-<tr><td>Referral incentive (1 month free per referral)</td><td>Matches existing word-of-mouth behavior; cheap relative to paid ads.</td><td>Discount cost only, no cash spend.</td></tr>
-<tr><td>Urdu-language WhatsApp/short-video content</td><td>Builds credibility with relatable, local use cases rather than generic SaaS marketing.</td><td>Low cost, founder or freelancer-produced.</td></tr>
-<tr><td>Small LinkedIn/Google test budget</td><td>Worth a small, time-boxed test, but should not be the primary bet given audience mismatch.</td><td>Capped spend; measure cost per qualified lead before scaling.</td></tr>
-</table>
-<p>Target: keep blended CAC under $50 as stated in the Blueprint, but track it per channel — not blended — so the founder can see early whether trade-association and referral channels are in fact far cheaper than digital ones.</p>
+    <h3>4.4 Customer Acquisition Strategy</h3>
+    <table>
+      <tr>
+        <th style="width:24%;">Tactic</th>
+        <th>Why it fits this ICP</th>
+        <th>Cost profile</th>
+      </tr>
+      <tr>
+        <td>Door-to-door / market-walk sales</td>
+        <td>Owners trust a face-to-face pitch more than a digital ad; matches the "wary of complex software" persona.
+        </td>
+        <td>Founder time only; highest CAC efficiency for first cohort.</td>
+      </tr>
+      <tr>
+        <td>Trade association &amp; distributor partnerships</td>
+        <td>Reaches dozens of owners through one trusted relationship.</td>
+        <td>Low cash cost; relationship-building time.</td>
+      </tr>
+      <tr>
+        <td>Referral incentive (1 month free per referral)</td>
+        <td>Matches existing word-of-mouth behavior; cheap relative to paid ads.</td>
+        <td>Discount cost only, no cash spend.</td>
+      </tr>
+      <tr>
+        <td>Urdu-language WhatsApp/short-video content</td>
+        <td>Builds credibility with relatable, local use cases rather than generic SaaS marketing.</td>
+        <td>Low cost, founder or freelancer-produced.</td>
+      </tr>
+      <tr>
+        <td>Small LinkedIn/Google test budget</td>
+        <td>Worth a small, time-boxed test, but should not be the primary bet given audience mismatch.</td>
+        <td>Capped spend; measure cost per qualified lead before scaling.</td>
+      </tr>
+    </table>
+    <p>Target: keep blended CAC under $50 as stated in the Blueprint, but track it per channel — not blended — so the
+      founder can see early whether trade-association and referral channels are in fact far cheaper than digital ones.
+    </p>
 
-<h3>4.5 First 100 Users Plan</h3>
-<ul>
-<li><strong>Users 1-15 (Weeks 1-4):</strong> Convert the existing 10-15 conversation contacts into a paid pilot (small deposit or first-month payment), single vertical (retail), single city (Karachi).</li>
-<li><strong>Users 16-40 (Weeks 5-8):</strong> Recruit through 2-3 trade association introductions and referrals from the first 15; founder-led onboarding for every signup, log every objection and churn reason.</li>
-<li><strong>Users 41-100 (Weeks 9-16):</strong> Layer in one additional vertical (likely gyms/services or education, whichever shows the strongest paid-pilot conversion in the first cohort) and begin testing one paid acquisition channel at small budget.</li>
-<li><strong>Throughout:</strong> Hold a weekly "kill or keep" review against NPS, paid conversion rate, and churn — not against feature completion.</li>
-</ul>
+    <h3>4.5 First 100 Users Plan</h3>
+    <ul>
+      <li><strong>Users 1-15 (Weeks 1-4):</strong> Convert the existing 10-15 conversation contacts into a paid pilot
+        (small deposit or first-month payment), single vertical (retail), single city (Karachi).</li>
+      <li><strong>Users 16-40 (Weeks 5-8):</strong> Recruit through 2-3 trade association introductions and referrals
+        from the first 15; founder-led onboarding for every signup, log every objection and churn reason.</li>
+      <li><strong>Users 41-100 (Weeks 9-16):</strong> Layer in one additional vertical (likely gyms/services or
+        education, whichever shows the strongest paid-pilot conversion in the first cohort) and begin testing one paid
+        acquisition channel at small budget.</li>
+      <li><strong>Throughout:</strong> Hold a weekly "kill or keep" review against NPS, paid conversion rate, and churn
+        — not against feature completion.</li>
+    </ul>
 
-<h3>4.6 Competitive Position &amp; Moat</h3>
-<p>There is currently <strong>no durable technical moat</strong> — attendance, sales tracking, and basic CRM are all features Zoho or Odoo could ship into a localized, cheap tier. The defensible position has to be built from things that are slow for an incumbent to copy:</p>
-<ul>
-<li><strong>Local-first trust:</strong> Urdu UI, JazzCash/EasyPaisa, and a human, WhatsApp-based support relationship — incumbents are slower to localize this deeply for a low-ARPU segment.</li>
-<li><strong>Distribution relationships:</strong> exclusive-feeling ties with trade associations and distributors are harder and slower to replicate than a feature.</li>
-<li><strong>Vertical workflow depth</strong> once one vertical is proven (e.g., shrinkage-detection workflows built specifically for multi-store retail), rather than a horizontal, do-everything tool.</li>
-<li><strong>Speed of local support</strong> — a same-day, same-language WhatsApp response is hard for a global incumbent's support org to match at this price point.</li>
-</ul>
-<p>The moat, in short, is distribution and trust, not code — which means the next 60 days should be spent earning relationships and payment commitments, not adding modules.</p>
+    <h3>4.6 Competitive Position &amp; Moat</h3>
+    <p>There is currently <strong>no durable technical moat</strong> — attendance, sales tracking, and basic CRM are all
+      features Zoho or Odoo could ship into a localized, cheap tier. The defensible position has to be built from things
+      that are slow for an incumbent to copy:</p>
+    <ul>
+      <li><strong>Local-first trust:</strong> Urdu UI, JazzCash/EasyPaisa, and a human, WhatsApp-based support
+        relationship — incumbents are slower to localize this deeply for a low-ARPU segment.</li>
+      <li><strong>Distribution relationships:</strong> exclusive-feeling ties with trade associations and distributors
+        are harder and slower to replicate than a feature.</li>
+      <li><strong>Vertical workflow depth</strong> once one vertical is proven (e.g., shrinkage-detection workflows
+        built specifically for multi-store retail), rather than a horizontal, do-everything tool.</li>
+      <li><strong>Speed of local support</strong> — a same-day, same-language WhatsApp response is hard for a global
+        incumbent's support org to match at this price point.</li>
+    </ul>
+    <p>The moat, in short, is distribution and trust, not code — which means the next 60 days should be spent earning
+      relationships and payment commitments, not adding modules.</p>
 
-<h3>4.7 Reverse SWOT Analysis</h3>
-<p>Reverse SWOT inverts the obvious read: it asks where a "Strength" is secretly a risk, and where a "Weakness" or "Threat" is secretly an opening.</p>
-<table>
-<tr><th style="width:20%;">Category</th><th>Standard read</th><th>Reverse read</th></tr>
-<tr><td>Strong founder-market fit</td><td>Strength — founder understands the problem deeply.</td><td>Hidden risk: a solo, part-time founder is also the entire sales, support, and onboarding team — the strength is also the single point of failure.</td></tr>
-<tr><td>Zero paying customers</td><td>Weakness — no proof the business works.</td><td>Hidden opportunity: nothing is locked in yet, so pricing, vertical, and channel can still be changed cheaply, before any sunk cost or unhappy-customer reputation exists.</td></tr>
-<tr><td>Competition from Zoho/Odoo/SAP</td><td>Threat — well-funded incumbents.</td><td>Hidden opportunity: those tools' complexity and pricing actively created this ICP's stated pain, validating that "too expensive and complex" is a real, named objection the startup can sell directly against.</td></tr>
-<tr><td>Highly price-sensitive ICP ($2-10/month)</td><td>Weakness — caps revenue per customer.</td><td>Hidden opportunity: a true low-ARPU, high-volume model, if distribution is cracked, can reach a very large base that premium-priced incumbents structurally cannot serve profitably.</td></tr>
-</table>
+    <h3>4.7 Reverse SWOT Analysis</h3>
+    <p>Reverse SWOT inverts the obvious read: it asks where a "Strength" is secretly a risk, and where a "Weakness" or
+      "Threat" is secretly an opening.</p>
+    <table>
+      <tr>
+        <th style="width:20%;">Category</th>
+        <th>Standard read</th>
+        <th>Reverse read</th>
+      </tr>
+      <tr>
+        <td>Strong founder-market fit</td>
+        <td>Strength — founder understands the problem deeply.</td>
+        <td>Hidden risk: a solo, part-time founder is also the entire sales, support, and onboarding team — the strength
+          is also the single point of failure.</td>
+      </tr>
+      <tr>
+        <td>Zero paying customers</td>
+        <td>Weakness — no proof the business works.</td>
+        <td>Hidden opportunity: nothing is locked in yet, so pricing, vertical, and channel can still be changed
+          cheaply, before any sunk cost or unhappy-customer reputation exists.</td>
+      </tr>
+      <tr>
+        <td>Competition from Zoho/Odoo/SAP</td>
+        <td>Threat — well-funded incumbents.</td>
+        <td>Hidden opportunity: those tools' complexity and pricing actively created this ICP's stated pain, validating
+          that "too expensive and complex" is a real, named objection the startup can sell directly against.</td>
+      </tr>
+      <tr>
+        <td>Highly price-sensitive ICP ($2-10/month)</td>
+        <td>Weakness — caps revenue per customer.</td>
+        <td>Hidden opportunity: a true low-ARPU, high-volume model, if distribution is cracked, can reach a very large
+          base that premium-priced incumbents structurally cannot serve profitably.</td>
+      </tr>
+    </table>
 
-<h3>4.8 Investor One-Liner &amp; 30-Second Founder Pitch</h3>
-<div class="card"><strong>Investor one-liner:</strong> "We're building the $10-a-month alternative to Zoho and Odoo for South Asia's underserved micro-retailers — attendance, sales tracking, and CRM that work in Urdu and integrate with local mobile wallets, starting with the 3-4 hours a day shop owners lose to manual reconciliation."</div>
-<div class="pitchbox"><strong>30-second founder pitch:</strong><br>"Millions of small shop, gym, and school owners across Pakistan run their entire business on WhatsApp and spreadsheets — and lose 3-4 hours a day to it, with no warning when stock or cash goes missing. Zoho and Odoo are too expensive and too complicated for them. We're building a $10-a-month, Urdu-first tool that tracks attendance, sales, and customers automatically, pays out in JazzCash and EasyPaisa, and gives an owner back their afternoon. We're now converting our first paid pilot customers to prove people will pay for it."</div>
-</div>
+    <h3>4.8 Investor One-Liner &amp; 30-Second Founder Pitch</h3>
+    <div class="card"><strong>Investor one-liner:</strong> "We're building the $10-a-month alternative to Zoho and Odoo
+      for South Asia's underserved micro-retailers — attendance, sales tracking, and CRM that work in Urdu and integrate
+      with local mobile wallets, starting with the 3-4 hours a day shop owners lose to manual reconciliation."</div>
+    <div class="pitchbox"><strong>30-second founder pitch:</strong><br>"Millions of small shop, gym, and school owners
+      across Pakistan run their entire business on WhatsApp and spreadsheets — and lose 3-4 hours a day to it, with no
+      warning when stock or cash goes missing. Zoho and Odoo are too expensive and too complicated for them. We're
+      building a $10-a-month, Urdu-first tool that tracks attendance, sales, and customers automatically, pays out in
+      JazzCash and EasyPaisa, and gives an owner back their afternoon. We're now converting our first paid pilot
+      customers to prove people will pay for it."</div>
+  </div>
 
-<!-- ============ INVESTMENT SCORECARD ============ -->
-<div class="pgbreak">
-<h2>5. Investment Scorecard (0-100)</h2>
-<div class="scorebar-row"><div class="scorebar-label">Business Viability</div><div class="scorebar-track"><div class="scorebar-fill" style="width:50%; background:#d8a417;"></div></div><div class="scorebar-val">50</div></div>
-<div class="scorebar-row"><div class="scorebar-label">Revenue Potential</div><div class="scorebar-track"><div class="scorebar-fill" style="width:42%; background:#d9711a;"></div></div><div class="scorebar-val">42</div></div>
-<div class="scorebar-row"><div class="scorebar-label">GTM Strength</div><div class="scorebar-track"><div class="scorebar-fill" style="width:38%; background:#d9711a;"></div></div><div class="scorebar-val">38</div></div>
-<div class="scorebar-row"><div class="scorebar-label">Competitive Strength</div><div class="scorebar-track"><div class="scorebar-fill" style="width:45%; background:#d8a417;"></div></div><div class="scorebar-val">45</div></div>
-<div class="scorebar-row"><div class="scorebar-label">Investor Readiness</div><div class="scorebar-track"><div class="scorebar-fill" style="width:28%; background:#c0392b;"></div></div><div class="scorebar-val">28</div></div>
+  <!-- ============ INVESTMENT SCORECARD ============ -->
+  <div class="pgbreak">
+    <h2>5. Investment Scorecard (0-100)</h2>
+    <div class="scorebar-row">
+      <div class="scorebar-label">Business Viability</div>
+      <div class="scorebar-track">
+        <div class="scorebar-fill" style="width:50%; background:#d8a417;"></div>
+      </div>
+      <div class="scorebar-val">50</div>
+    </div>
+    <div class="scorebar-row">
+      <div class="scorebar-label">Revenue Potential</div>
+      <div class="scorebar-track">
+        <div class="scorebar-fill" style="width:42%; background:#d9711a;"></div>
+      </div>
+      <div class="scorebar-val">42</div>
+    </div>
+    <div class="scorebar-row">
+      <div class="scorebar-label">GTM Strength</div>
+      <div class="scorebar-track">
+        <div class="scorebar-fill" style="width:38%; background:#d9711a;"></div>
+      </div>
+      <div class="scorebar-val">38</div>
+    </div>
+    <div class="scorebar-row">
+      <div class="scorebar-label">Competitive Strength</div>
+      <div class="scorebar-track">
+        <div class="scorebar-fill" style="width:45%; background:#d8a417;"></div>
+      </div>
+      <div class="scorebar-val">45</div>
+    </div>
+    <div class="scorebar-row">
+      <div class="scorebar-label">Investor Readiness</div>
+      <div class="scorebar-track">
+        <div class="scorebar-fill" style="width:28%; background:#c0392b;"></div>
+      </div>
+      <div class="scorebar-val">28</div>
+    </div>
 
-<table>
-<tr><th style="width:20%;">Dimension</th><th style="width:10%;">Score</th><th>Reasoning</th></tr>
-<tr><td>Business Viability</td><td>50</td><td>Real, severe, well-evidenced pain and a buildable MVP, but nothing has shipped to a paying customer and the core price has not been tested against the ICP's own stated budget.</td></tr>
-<tr><td>Revenue Potential</td><td>42</td><td>Large logo count is theoretically possible, but ARPU is capped low by design and the headline Premium price exceeds the ICP's stated willingness to pay — the $180/year ARPC target is unverified.</td></tr>
-<tr><td>GTM Strength</td><td>38</td><td>Planned channels (Google, LinkedIn) are a weak fit for this offline-first, low-English ICP; the stronger channels (trade associations, WhatsApp networks, distributors) are identified in this report but not yet in motion.</td></tr>
-<tr><td>Competitive Strength</td><td>45</td><td>No technical moat against Zoho/Odoo, but a credible, currently-unbuilt local-trust and distribution moat is available if executed quickly.</td></tr>
-<tr><td>Investor Readiness</td><td>28</td><td>Zero paying customers, no tested pricing, solo/part-time founder — this is pre-seed/friends-and-family stage, not yet ready for institutional diligence.</td></tr>
-</table>
-<p class="small">Average score: 40.6 / 100 — reads as "promising hypothesis, not yet an investable business," consistent with the Blueprint's own "Promising but Unvalidated" verdict, with this report adding a specific, fixable pricing flaw as the top blocker.</p>
-</div>
+    <table>
+      <tr>
+        <th style="width:20%;">Dimension</th>
+        <th style="width:10%;">Score</th>
+        <th>Reasoning</th>
+      </tr>
+      <tr>
+        <td>Business Viability</td>
+        <td>50</td>
+        <td>Real, severe, well-evidenced pain and a buildable MVP, but nothing has shipped to a paying customer and the
+          core price has not been tested against the ICP's own stated budget.</td>
+      </tr>
+      <tr>
+        <td>Revenue Potential</td>
+        <td>42</td>
+        <td>Large logo count is theoretically possible, but ARPU is capped low by design and the headline Premium price
+          exceeds the ICP's stated willingness to pay — the $180/year ARPC target is unverified.</td>
+      </tr>
+      <tr>
+        <td>GTM Strength</td>
+        <td>38</td>
+        <td>Planned channels (Google, LinkedIn) are a weak fit for this offline-first, low-English ICP; the stronger
+          channels (trade associations, WhatsApp networks, distributors) are identified in this report but not yet in
+          motion.</td>
+      </tr>
+      <tr>
+        <td>Competitive Strength</td>
+        <td>45</td>
+        <td>No technical moat against Zoho/Odoo, but a credible, currently-unbuilt local-trust and distribution moat is
+          available if executed quickly.</td>
+      </tr>
+      <tr>
+        <td>Investor Readiness</td>
+        <td>28</td>
+        <td>Zero paying customers, no tested pricing, solo/part-time founder — this is pre-seed/friends-and-family
+          stage, not yet ready for institutional diligence.</td>
+      </tr>
+    </table>
+    <p class="small">Average score: 40.6 / 100 — reads as "promising hypothesis, not yet an investable business,"
+      consistent with the Blueprint's own "Promising but Unvalidated" verdict, with this report adding a specific,
+      fixable pricing flaw as the top blocker.</p>
+  </div>
 
-<!-- ============ VISUAL DASHBOARD ============ -->
-<div class="pgbreak">
-<h2>6. Visual Dashboard</h2>
-__SVG_DASHBOARD__
-</div>
+  <!-- ============ VISUAL DASHBOARD ============ -->
+  <div class="pgbreak">
+    <h2>6. Visual Dashboard</h2>
+    __SVG_DASHBOARD__
+  </div>
 
-<!-- ============ FOUNDER ACTION SHEET ============ -->
-<div class="pgbreak">
-<h2>7. Founder Action Sheet — Top 10 Actions</h2>
-<table>
-<tr><th style="width:6%;">#</th><th style="width:34%;">Action</th><th>Why it's prioritized here</th></tr>
-<tr><td>1</td><td>Convert 5 of the existing 10-15 contacts into a <strong>paid</strong> pilot this week (deposit or first month upfront).</td><td>Tests willingness-to-pay directly, not via opinion — the single highest-value unknown.</td></tr>
-<tr><td>2</td><td>Re-test pricing: offer one cohort $10-15/month and a second cohort a per-store add-on model; compare conversion.</td><td>Resolves the budget-vs-price mismatch before it's baked into the business model.</td></tr>
-<tr><td>3</td><td>Pick one vertical (retail) and one city (Karachi) and freeze scope there for 60 days.</td><td>Concentration beats breadth at zero-customer stage; proves one playbook before copying it.</td></tr>
-<tr><td>4</td><td>Get 2-3 introductions into local trade/market associations or distributor networks this month.</td><td>Distribution risk is currently larger than product risk.</td></tr>
-<tr><td>5</td><td>Move JazzCash/EasyPaisa integration into the paid-pilot scope, not "Should Have" later.</td><td>A willing payer who can't pay easily doesn't count as validated revenue.</td></tr>
-<tr><td>6</td><td>Lock and build the 3-feature MVP: Attendance, Sales Tracking, basic CRM (mobile-first, Urdu).</td><td>Matches the Blueprint's MoSCoW "Must Have" list; keep scope tight.</td></tr>
-<tr><td>7</td><td>Recruit 5 beta testers from the existing network and run structured, logged feedback sessions.</td><td>Generates the evidence needed to fix onboarding before wider rollout.</td></tr>
-<tr><td>8</td><td>Run a small, capped test budget on WhatsApp/trade-network outreach vs. LinkedIn/Google; measure cost per qualified lead per channel.</td><td>Replaces the untested "Google + LinkedIn" assumption with real channel data.</td></tr>
-<tr><td>9</td><td>Bring in a part-time co-founder, advisor, or contractor for sales/support capacity.</td><td>High-touch onboarding does not scale on one part-time person; this is the top operational risk.</td></tr>
-<tr><td>10</td><td>Set a 60-day go/iterate/pivot decision gate based on paid conversions and NPS, not feature completion.</td><td>Forces a revenue-evidence-based decision instead of a theory-based one.</td></tr>
-</table>
-</div>
+  <!-- ============ FOUNDER ACTION SHEET ============ -->
+  <div class="pgbreak">
+    <h2>7. Founder Action Sheet — Top 10 Actions</h2>
+    <table>
+      <tr>
+        <th style="width:6%;">#</th>
+        <th style="width:34%;">Action</th>
+        <th>Why it's prioritized here</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Convert 5 of the existing 10-15 contacts into a <strong>paid</strong> pilot this week (deposit or first
+          month upfront).</td>
+        <td>Tests willingness-to-pay directly, not via opinion — the single highest-value unknown.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Re-test pricing: offer one cohort $10-15/month and a second cohort a per-store add-on model; compare
+          conversion.</td>
+        <td>Resolves the budget-vs-price mismatch before it's baked into the business model.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Pick one vertical (retail) and one city (Karachi) and freeze scope there for 60 days.</td>
+        <td>Concentration beats breadth at zero-customer stage; proves one playbook before copying it.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Get 2-3 introductions into local trade/market associations or distributor networks this month.</td>
+        <td>Distribution risk is currently larger than product risk.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Move JazzCash/EasyPaisa integration into the paid-pilot scope, not "Should Have" later.</td>
+        <td>A willing payer who can't pay easily doesn't count as validated revenue.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Lock and build the 3-feature MVP: Attendance, Sales Tracking, basic CRM (mobile-first, Urdu).</td>
+        <td>Matches the Blueprint's MoSCoW "Must Have" list; keep scope tight.</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Recruit 5 beta testers from the existing network and run structured, logged feedback sessions.</td>
+        <td>Generates the evidence needed to fix onboarding before wider rollout.</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Run a small, capped test budget on WhatsApp/trade-network outreach vs. LinkedIn/Google; measure cost per
+          qualified lead per channel.</td>
+        <td>Replaces the untested "Google + LinkedIn" assumption with real channel data.</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Bring in a part-time co-founder, advisor, or contractor for sales/support capacity.</td>
+        <td>High-touch onboarding does not scale on one part-time person; this is the top operational risk.</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Set a 60-day go/iterate/pivot decision gate based on paid conversions and NPS, not feature completion.</td>
+        <td>Forces a revenue-evidence-based decision instead of a theory-based one.</td>
+      </tr>
+    </table>
+  </div>
 
-<!-- ============ SUSTAINABILITY VERDICT ============ -->
-<h2>8. Sustainability Verdict</h2>
-<div class="verdictbox amber">
-<strong>🟡 Validate</strong> — This is a real, painfully felt problem matched to a founder with genuine domain fit, but it is not yet a sustainable business: there are no paying customers, the headline price contradicts the ICP's own stated budget, and the planned acquisition channels don't match where this buyer actually spends attention. With a corrected, tested price, a single-vertical/single-city distribution push through trade networks and WhatsApp, and local payment collection built into the very first paid pilot, this can move from a fundable hypothesis to a validated, sustainable business within the next 60-90 days — but only if the next milestone is paid customers, not shipped features.
-</div>
+  <!-- ============ SUSTAINABILITY VERDICT ============ -->
+  <h2>8. Sustainability Verdict</h2>
+  <div class="verdictbox amber">
+    <strong>🟡 Validate</strong> — This is a real, painfully felt problem matched to a founder with genuine domain fit,
+    but it is not yet a sustainable business: there are no paying customers, the headline price contradicts the ICP's
+    own stated budget, and the planned acquisition channels don't match where this buyer actually spends attention. With
+    a corrected, tested price, a single-vertical/single-city distribution push through trade networks and WhatsApp, and
+    local payment collection built into the very first paid pilot, this can move from a fundable hypothesis to a
+    validated, sustainable business within the next 60-90 days — but only if the next milestone is paid customers, not
+    shipped features.
+  </div>
 </body>
+
 </html>
