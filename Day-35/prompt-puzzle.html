@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🧩 Prompt Puzzle — Master AI Prompting Through Play</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
+    --accent:#7c3aed; --accent2:#06b6d4; --gold:#fbbf24;
+    --good:#22c55e; --bad:#ef4444; --card:rgba(255,255,255,0.06);
+    --card-border:rgba(255,255,255,0.12); --text:#f1f0ff; --muted:#a5a3c4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; font-family:'Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+    background-size:200% 200%; animation:bgshift 18s ease infinite;
+    color:var(--text); overflow-x:hidden;
+  }
+  @keyframes bgshift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  #app{max-width:1000px; margin:0 auto; padding:24px 16px 80px;}
+  h1{font-size:1.8rem; text-align:center; margin-bottom:4px; letter-spacing:.5px;
+     text-shadow:0 0 20px rgba(124,58,237,.6);}
+  .subtitle{text-align:center; color:var(--muted); margin-bottom:24px; font-size:.95rem;}
+  .card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:18px;
+    padding:22px; backdrop-filter:blur(14px); box-shadow:0 8px 32px rgba(0,0,0,.35);
+    margin-bottom:20px; animation:fadeIn .5s ease;
+  }
+  @keyframes fadeIn{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:translateY(0)}}
+  .btn{
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none;
+    padding:12px 22px; border-radius:12px; font-weight:600; cursor:pointer; font-size:.95rem;
+    transition:transform .15s, box-shadow .15s; box-shadow:0 4px 14px rgba(124,58,237,.4);
+  }
+  .btn:hover{transform:translateY(-2px) scale(1.03); box-shadow:0 8px 22px rgba(124,58,237,.55);}
+  .btn:active{transform:scale(.97);}
+  .btn.secondary{background:rgba(255,255,255,.1); box-shadow:none;}
+  .btn.small{padding:8px 14px; font-size:.8rem;}
+  .row{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+  .center{text-align:center;}
+  .badge{display:inline-block; padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:700;
+    background:rgba(124,58,237,.25); border:1px solid var(--accent); margin:2px;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;}
+  .stat{font-size:.78rem; color:var(--muted);}
+  .stat b{color:var(--gold);}
+  .progress-wrap{height:8px; background:rgba(255,255,255,.1); border-radius:6px; overflow:hidden; margin-bottom:18px;}
+  .progress-bar{height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:6px;
+    transition:width .4s ease;}
+  .blockpool{display:flex; flex-wrap:wrap; gap:10px; min-height:56px; padding:10px; border-radius:12px;
+    background:rgba(0,0,0,.15); border:1px dashed rgba(255,255,255,.15);}
+  .block{
+    padding:10px 14px; border-radius:10px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+    cursor:grab; font-size:.85rem; user-select:none; transition:transform .15s, background .2s; max-width:340px;
+  }
+  .block:hover{background:rgba(124,58,237,.25); transform:translateY(-2px);}
+  .block.dragging{opacity:.4;}
+  .block.removed{opacity:.35; text-decoration:line-through; border-color:var(--bad);}
+  .block.correctFlag{border-color:var(--good) !important; box-shadow:0 0 10px rgba(34,197,94,.5);}
+  .block.wrongFlag{border-color:var(--bad) !important; box-shadow:0 0 10px rgba(239,68,68,.5);}
+  .dropzone{min-height:70px; padding:10px; border-radius:12px; background:rgba(255,255,255,.03);
+    border:2px dashed rgba(124,58,237,.4); display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+  .dropzone.dragover{background:rgba(124,58,237,.15); border-color:var(--accent2);}
+  .section-label{font-size:.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin:14px 0 6px;}
+  .choice-card{padding:14px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid var(--card-border);
+    cursor:pointer; margin-bottom:10px; transition:.2s; font-size:.85rem; line-height:1.4;}
+  .choice-card:hover{background:rgba(124,58,237,.18); transform:translateX(4px);}
+  .choice-card.picked{border-color:var(--accent2); background:rgba(6,182,212,.15);}
+  .output-compare{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;}
+  @media(max-width:640px){.output-compare{grid-template-columns:1fr;}}
+  .output-box{padding:12px; border-radius:12px; font-size:.82rem; line-height:1.45;}
+  .output-box.weak{background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.35);}
+  .output-box.opt{background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.35);}
+  .principle-box{margin-top:14px; padding:12px 14px; border-radius:12px; background:rgba(251,191,36,.1);
+    border:1px solid rgba(251,191,36,.35); font-size:.85rem;}
+  #toasts{position:fixed; top:16px; right:16px; z-index:999; display:flex; flex-direction:column; gap:8px;}
+  .toast{background:rgba(20,15,40,.95); border:1px solid var(--accent); padding:10px 16px; border-radius:10px;
+    font-size:.85rem; box-shadow:0 6px 20px rgba(0,0,0,.4); animation:toastIn .3s ease, toastOut .4s ease 2.6s forwards;}
+  @keyframes toastIn{from{opacity:0; transform:translateX(40px)} to{opacity:1; transform:translateX(0)}}
+  @keyframes toastOut{to{opacity:0; transform:translateX(40px)}}
+  .scorepop{position:fixed; pointer-events:none; font-weight:800; color:var(--gold); font-size:1.4rem;
+    animation:popUp 1s ease forwards; z-index:1000;}
+  @keyframes popUp{from{opacity:1; transform:translateY(0)} to{opacity:0; transform:translateY(-60px)}}
+  .dna-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:.8rem;}
+  .dna-label{width:110px; color:var(--muted);}
+  .dna-bar-bg{flex:1; height:10px; background:rgba(255,255,255,.08); border-radius:6px; overflow:hidden;}
+  .dna-bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .rank-badge{font-size:2.2rem; text-align:center; margin:10px 0;}
+  .hidden{display:none !important;}
+  textarea.disabledlike{width:100%; min-height:70px; background:rgba(0,0,0,.2); color:var(--text); border:1px solid var(--card-border); border-radius:10px; padding:10px; font-family:monospace; font-size:.8rem;}
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+<div id="app">
+  <h1>🧩 Prompt Puzzle</h1>
+  <div class="subtitle">Master AI Prompting Through Play — <span id="domainTag">Software/Coding</span> · <span id="diffTag">Intermediate</span></div>
+
+  <!-- START SCREEN -->
+  <div id="screen-start" class="card center">
+    <h2>Ready to sharpen your prompting skills?</h2>
+    <p style="color:var(--muted)">You'll face 6 scenarios across <b>Build the Prompt</b>, <b>Clean the Prompt</b>, and <b>Choose the Best Prompt</b>. Hints cost points — use them wisely.</p>
+    <button class="btn" onclick="startGame()">🚀 Start Challenge</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="hidden">
+    <div class="topbar">
+      <div class="stat">Scenario <b id="scenIdx">1</b>/<b id="scenTotal">6</b></div>
+      <div class="stat">⭐ Score: <b id="liveScore">0</b></div>
+      <div class="stat">⏱ <b id="liveTimer">0s</b></div>
+      <button class="btn small secondary" onclick="useHint()">💡 Hint (-15 pts)</button>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+    <div class="card">
+      <span class="badge" id="challengeTypeBadge">BUILD THE PROMPT</span>
+      <h2 id="scenTitle" style="margin:10px 0 4px;"></h2>
+      <p style="color:var(--muted); font-size:.9rem;" id="scenDesired"></p>
+
+      <div id="hintBox" class="principle-box hidden"></div>
+
+      <!-- BUILD MODE -->
+      <div id="buildMode" class="hidden">
+        <div class="section-label">Drag blocks into the prompt sequence →</div>
+        <div class="blockpool" id="poolArea"></div>
+        <div class="section-label">Your Prompt Sequence</div>
+        <div class="dropzone" id="dropArea"></div>
+      </div>
+
+      <!-- CLEAN MODE -->
+      <div id="cleanMode" class="hidden">
+        <div class="section-label">Click the noisy / distracting blocks to remove them. Keep only what's essential.</div>
+        <div class="blockpool" id="cleanArea"></div>
+      </div>
+
+      <!-- CHOOSE MODE -->
+      <div id="chooseMode" class="hidden">
+        <div class="section-label">Which prompt would produce the best result?</div>
+        <div id="choiceArea"></div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <button class="btn" id="submitBtn" onclick="submitScenario()">✅ Submit</button>
+      </div>
+    </div>
+
+    <!-- RESULT REVEAL -->
+    <div id="resultReveal" class="card hidden">
+      <h3 id="resultHeadline"></h3>
+      <div class="output-compare">
+        <div class="output-box weak"><b>Weak Output</b><br><span id="weakOut"></span></div>
+        <div class="output-box opt"><b>Optimized Output</b><br><span id="optOut"></span></div>
+      </div>
+      <div class="principle-box">💡 <b>Prompt Principle:</b> <span id="principleText"></span></div>
+      <div class="section-label">Optimized Prompt Reference</div>
+      <textarea class="disabledlike" readonly id="optPromptRef"></textarea>
+      <div class="row" style="margin-top:14px;">
+        <button class="btn" onclick="nextScenario()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT SCREEN -->
+  <div id="screen-report" class="hidden">
+    <div class="card center">
+      <h2>📊 Prompt Performance Report</h2>
+      <div class="rank-badge" id="rankBadge"></div>
+      <h3 id="ratingText"></h3>
+      <div class="stat" style="font-size:1rem; margin:10px 0;">Total Score: <b id="finalScore" style="color:var(--gold); font-size:1.3rem;">0</b></div>
+      <div class="row">
+        <div class="stat">🎯 Accuracy: <b id="repAcc"></b></div>
+        <div class="stat">⏱ Time: <b id="repTime"></b></div>
+        <div class="stat">🧩 Moves: <b id="repMoves"></b></div>
+        <div class="stat">❌ Wrong: <b id="repWrong"></b></div>
+        <div class="stat">💡 Hints: <b id="repHints"></b></div>
+        <div class="stat">🚀 Opt. Bonus: <b id="repBonus"></b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🧬 Prompt DNA</h3>
+      <div id="dnaChart"></div>
+    </div>
+
+    <div class="card">
+      <h3>📝 Personalized Feedback</h3>
+      <p id="feedbackText" style="color:var(--muted); line-height:1.6;"></p>
+      <div class="principle-box">🎯 <b>Next Milestone:</b> <span id="milestoneText"></span></div>
+    </div>
+
+    <div class="card">
+      <h3>✨ Your Final Optimized Prompt Template</h3>
+      <textarea class="disabledlike" readonly id="finalPromptBox" style="min-height:100px;"></textarea>
+    </div>
+
+    <div class="center">
+      <button class="btn" onclick="replay()">🔁 Replay with New Scenarios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- SCENARIO DATA ---------------- */
+const SCENARIOS = [
+{
+  id:1, title:"Debugging a Null Pointer Exception", challengeType:"build",
+  desiredOutput:"A step-by-step root-cause analysis of a NullPointerException with a fix and a regression test.",
+  correctBlocks:[
+    "Act as a senior Java backend engineer.",
+    "Here is the stack trace and the relevant method: [stack trace + code].",
+    "Identify the root cause of the NullPointerException.",
+    "Propose a fix with a code diff.",
+    "Include a JUnit test that reproduces and verifies the fix.",
+    "Explain your reasoning in 3-4 concise bullet points."
+  ],
+  distractorBlocks:[
+    "Make the response funny and full of emojis.",
+    "Ignore the stack trace and just guess.",
+    "Rewrite the entire codebase from scratch."
+  ],
+  weakPrompt:"My code has an error. Fix it.",
+  optimizedPrompt:"Act as a senior Java backend engineer. Here is the stack trace and the relevant method: [stack trace + code]. Identify the root cause of the NullPointerException, propose a fix with a code diff, include a JUnit test that reproduces and verifies the fix, and explain your reasoning in 3-4 concise bullet points.",
+  overEngineeredPrompt:"As the world's most elite 10x Java architect with 30 years of FAANG experience, deeply analyze every philosophical angle of null safety since 1965, write a 2000-word essay on Tony Hoare's billion dollar mistake, then maybe fix the bug, formatted in purple markdown with 12 emojis per line.",
+  weakOutput:"It might be a null variable somewhere. Try adding a null check.",
+  optimizedOutput:"Root cause: user.getProfile() returns null when profile is unset. Fix: added a null guard with default profile fallback. Test: testGetProfileWhenNull_returnsDefault() added to verify.",
+  principle:"Specificity + Role Assignment: Giving the model a role and the exact artifact narrows the solution space dramatically."
+},
+{
+  id:2, title:"Refactoring a Messy Function", challengeType:"clean",
+  desiredOutput:"A cleaner, maintainable version of a long function with rationale.",
+  correctBlocks:[
+    "Act as a senior software engineer specializing in clean code.",
+    "Here is the function: [paste code].",
+    "Refactor it into smaller, single-responsibility functions.",
+    "Keep behavior identical; do not change functionality.",
+    "List the specific code smells you removed."
+  ],
+  distractorBlocks:[
+    "Add unrelated new features while you're at it.",
+    "Use as many one-letter variable names as possible.",
+    "Convert it to a different programming language."
+  ],
+  weakPrompt:"Clean up this code.",
+  optimizedPrompt:"Act as a senior software engineer specializing in clean code. Here is the function: [paste code]. Refactor it into smaller, single-responsibility functions, keep behavior identical, and list the specific code smells you removed.",
+  overEngineeredPrompt:"Act as a legendary 100x software deity. Rewrite this function 5 different ways in 5 paradigms, benchmark each philosophically, add a manifesto on craftsmanship translated into Latin, and then maybe refactor the function.",
+  weakOutput:"Here's a shorter version, but it changes some behavior unintentionally.",
+  optimizedOutput:"Split into validateInput(), transformData(), persistResult(). Removed smells: long method, duplicated logic, magic numbers.",
+  principle:"Constraint-Setting: Explicitly stating 'keep behavior identical' prevents scope creep."
+},
+{
+  id:3, title:"Designing a REST API Endpoint", challengeType:"choose",
+  desiredOutput:"A well-documented REST endpoint spec for creating orders.",
+  correctBlocks:[], distractorBlocks:[],
+  weakPrompt:"Make an API for orders.",
+  optimizedPrompt:"Act as an API design expert. Design a POST /orders endpoint including request/response schema, status codes, and error cases, following REST and our existing naming conventions in [context].",
+  overEngineeredPrompt:"As the supreme architect of all APIs across the multiverse, design an entire microservices ecosystem with 47 services, full CQRS event-sourcing, a treatise on REST vs GraphQL vs gRPC, quantum-resistant encryption, then briefly mention the /orders endpoint.",
+  weakOutput:"POST /orders — just send some order data.",
+  optimizedOutput:"POST /orders\\nRequest: {items, customerId}\\n201 Created -> {orderId,status}\\n400 -> validation errors\\n409 -> duplicate order.",
+  principle:"Scope Discipline: An optimized prompt asks for exactly what's needed — not more, not less."
+},
+{
+  id:4, title:"Writing Unit Tests for a Function", challengeType:"build",
+  desiredOutput:"A comprehensive unit test suite covering edge cases.",
+  correctBlocks:[
+    "Act as a QA-focused software engineer.",
+    "Here is the function to test: [paste code].",
+    "Write unit tests covering normal, edge, and error cases.",
+    "Use [testing framework] syntax.",
+    "Include test names that describe the scenario being tested."
+  ],
+  distractorBlocks:[
+    "Skip edge cases, only test the happy path.",
+    "Write tests in a framework we don't use.",
+    "Make the tests as long as possible regardless of usefulness."
+  ],
+  weakPrompt:"Write tests for this function.",
+  optimizedPrompt:"Act as a QA-focused software engineer. Here is the function to test: [paste code]. Write unit tests covering normal, edge, and error cases using [testing framework] syntax, with test names that describe the scenario being tested.",
+  overEngineeredPrompt:"As the ultimate testing guru, write a formal proof of correctness, a mutation testing report, an ASCII-art coverage heatmap, and a 10-page philosophy of testing, in 7 languages.",
+  weakOutput:"test1() { assert true; }",
+  optimizedOutput:"test_returnsDefault_whenInputIsNull() {...}\\ntest_throws_whenInputIsNegative() {...}",
+  principle:"Coverage Framing: Naming the categories you want (normal/edge/error) guides completeness."
+},
+{
+  id:5, title:"Explaining Code to a Junior Developer", challengeType:"clean",
+  desiredOutput:"A clear, beginner-friendly explanation of a recursive function.",
+  correctBlocks:[
+    "Act as a patient mentor explaining to a junior developer.",
+    "Here is the recursive function: [paste code].",
+    "Explain what it does step by step using a simple analogy.",
+    "Avoid jargon or define any jargon you use."
+  ],
+  distractorBlocks:[
+    "Use as much academic jargon as possible.",
+    "Assume they already know advanced algorithms.",
+    "Keep the explanation to one word."
+  ],
+  weakPrompt:"Explain this code.",
+  optimizedPrompt:"Act as a patient mentor explaining to a junior developer. Here is the recursive function: [paste code]. Explain what it does step by step using a simple analogy, avoiding jargon or defining any jargon you use.",
+  overEngineeredPrompt:"As a Nobel-laureate computer scientist, deliver a rigorous explanation involving lambda calculus, category theory, and the halting problem, with citations and an appendix, for a junior developer who just started coding.",
+  weakOutput:"It calls itself until it stops. Recursion.",
+  optimizedOutput:"Think of nesting dolls: each call opens a smaller doll until the tiniest one (base case), then it closes back up returning results.",
+  principle:"Audience Calibration: Matching explanation depth to the audience's level improves usefulness."
+},
+{
+  id:6, title:"Requesting a Code Review", challengeType:"choose",
+  desiredOutput:"A thorough, actionable code review of a pull request.",
+  correctBlocks:[], distractorBlocks:[],
+  weakPrompt:"Review this PR.",
+  optimizedPrompt:"Act as a senior reviewer. Review this PR for correctness, readability, performance, and security. For each issue, cite the line number, explain the risk, and suggest a fix. Summarize with a merge/request-changes recommendation.",
+  overEngineeredPrompt:"As the supreme council of 50 senior engineers merged into one consciousness, perform an exhaustive review across 12 weighted-scoring categories, benchmark against FAANG codebases, and write a haiku for each file.",
+  weakOutput:"Looks okay, maybe some issues.",
+  optimizedOutput:"Line 42: potential SQL injection — use parameterized queries. Line 88: O(n^2) loop — consider a hashmap. Recommendation: Request changes.",
+  principle:"Actionable Output Framing: Requesting a decision plus specifics forces useful structure."
+}
+];
+
+/* ---------------- STATE ---------------- */
+let gameScenarios = [];
+let curIdx = 0;
+let totalScore = 0;
+let totalMoves = 0;
+let totalWrong = 0;
+let totalHints = 0;
+let optimizationBonusCount = 0;
+let correctCount = 0;
+let scenarioStartTime = 0;
+let totalElapsed = 0;
+let timerInterval = null;
+let hintUsedThisScenario = false;
+let movesThisScenario = 0;
+let wrongThisScenario = 0;
+let dragSrcEl = null;
+let cleanRemoved = new Set();
+let choicePicked = null;
+
+function shuffle(arr){ return arr.map(a=>[Math.random(),a]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]); }
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+function scorePop(points, x, y){
+  const el = document.createElement('div');
+  el.className='scorepop';
+  el.textContent=(points>=0?'+':'')+points;
+  el.style.left=(x||window.innerWidth/2)+'px';
+  el.style.top=(y||120)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+/* ---------------- FLOW ---------------- */
+function startGame(){
+  gameScenarios = shuffle(SCENARIOS.slice());
+  curIdx = 0; totalScore=0; totalMoves=0; totalWrong=0; totalHints=0;
+  optimizationBonusCount=0; correctCount=0; totalElapsed=0;
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  document.getElementById('scenTotal').textContent = gameScenarios.length;
+  loadScenario();
+}
+
+function loadScenario(){
+  document.getElementById('resultReveal').classList.add('hidden');
+  document.getElementById('hintBox').classList.add('hidden');
+  hintUsedThisScenario=false; movesThisScenario=0; wrongThisScenario=0;
+  cleanRemoved = new Set(); choicePicked=null;
+  const s = gameScenarios[curIdx];
+  document.getElementById('scenIdx').textContent = curIdx+1;
+  document.getElementById('scenTitle').textContent = s.title;
+  document.getElementById('scenDesired').textContent = "🎯 Desired Output: " + s.desiredOutput;
+  document.getElementById('challengeTypeBadge').textContent =
+    s.challengeType==='build' ? 'BUILD THE PROMPT' : s.challengeType==='clean' ? 'CLEAN THE PROMPT' : 'CHOOSE THE BEST PROMPT';
+  document.getElementById('progressBar').style.width = (curIdx/gameScenarios.length*100)+'%';
+
+  document.getElementById('buildMode').classList.add('hidden');
+  document.getElementById('cleanMode').classList.add('hidden');
+  document.getElementById('chooseMode').classList.add('hidden');
+
+  if(s.challengeType==='build') setupBuild(s);
+  else if(s.challengeType==='clean') setupClean(s);
+  else setupChoose(s);
+
+  scenarioStartTime = Date.now();
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    document.getElementById('liveTimer').textContent = Math.floor((Date.now()-scenarioStartTime)/1000)+'s';
+  }, 500);
+  document.getElementById('liveScore').textContent = totalScore;
+}
+
+/* ---------------- BUILD MODE ---------------- */
+function setupBuild(s){
+  document.getElementById('buildMode').classList.remove('hidden');
+  const pool = document.getElementById('poolArea');
+  const drop = document.getElementById('dropArea');
+  pool.innerHTML=''; drop.innerHTML='';
+  const all = shuffle(s.correctBlocks.map(b=>({text:b,correct:true})).concat(s.distractorBlocks.map(b=>({text:b,correct:false}))));
+  all.forEach(b=>{
+    const el = document.createElement('div');
+    el.className='block'; el.textContent=b.text; el.draggable=true;
+    el.dataset.correct=b.correct;
+    el.addEventListener('dragstart', e=>{ dragSrcEl=el; el.classList.add('dragging'); });
+    el.addEventListener('dragend', e=>{ el.classList.remove('dragging'); });
+    pool.appendChild(el);
+  });
+  [pool, drop].forEach(zone=>{
+    zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', ()=> zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e=>{
+      e.preventDefault(); zone.classList.remove('dragover');
+      if(dragSrcEl){ zone.appendChild(dragSrcEl); movesThisScenario++; dragSrcEl=null; }
+    });
+  });
+}
+
+/* ---------------- CLEAN MODE ---------------- */
+function setupClean(s){
+  document.getElementById('cleanMode').classList.remove('hidden');
+  const area = document.getElementById('cleanArea');
+  area.innerHTML='';
+  const all = shuffle(s.correctBlocks.map(b=>({text:b,correct:true})).concat(s.distractorBlocks.map(b=>({text:b,correct:false}))));
+  all.forEach(b=>{
+    const el = document.createElement('div');
+    el.className='block'; el.textContent=b.text;
+    el.dataset.correct=b.correct;
+    el.addEventListener('click', ()=>{
+      el.classList.toggle('removed');
+      movesThisScenario++;
+      if(el.classList.contains('removed')) cleanRemoved.add(b.text);
+      else cleanRemoved.delete(b.text);
+    });
+    area.appendChild(el);
+  });
+}
+
+/* ---------------- CHOOSE MODE ---------------- */
+function setupChoose(s){
+  document.getElementById('chooseMode').classList.remove('hidden');
+  const area = document.getElementById('choiceArea');
+  area.innerHTML='';
+  const options = shuffle([
+    {label:'weak', text:s.weakPrompt},
+    {label:'optimized', text:s.optimizedPrompt},
+    {label:'overengineered', text:s.overEngineeredPrompt}
+  ]);
+  options.forEach(opt=>{
+    const el = document.createElement('div');
+    el.className='choice-card'; el.textContent=opt.text;
+    el.addEventListener('click', ()=>{
+      document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('picked'));
+      el.classList.add('picked');
+      choicePicked = opt.label;
+      movesThisScenario++;
+    });
+    area.appendChild(el);
+  });
+}
+
+/* ---------------- HINT ---------------- */
+function useHint(){
+  const s = gameScenarios[curIdx];
+  if(hintUsedThisScenario) { toast("Hint already used for this scenario."); return; }
+  hintUsedThisScenario = true;
+  totalHints++;
+  document.getElementById('hintBox').classList.remove('hidden');
+  document.getElementById('hintBox').textContent = "💡 Principle Hint: " + s.principle;
+  toast("Hint used (-15 pts)");
+}
+
+/* ---------------- SUBMIT / SCORING ---------------- */
+function submitScenario(){
+  clearInterval(timerInterval);
+  const s = gameScenarios[curIdx];
+  const elapsed = Math.floor((Date.now()-scenarioStartTime)/1000);
+  totalElapsed += elapsed;
+  totalMoves += movesThisScenario;
+
+  let accuracy = 0; // 0-1
+  let wrongCount = 0;
+
+  if(s.challengeType==='build'){
+    const dropped = Array.from(document.getElementById('dropArea').children);
+    const correctInDrop = dropped.filter(el=>el.dataset.correct==='true').length;
+    const wrongInDrop = dropped.filter(el=>el.dataset.correct==='false').length;
+    wrongCount = wrongInDrop;
+    accuracy = correctInDrop / s.correctBlocks.length - (wrongInDrop*0.15);
+    accuracy = Math.max(0, Math.min(1, accuracy));
+  } else if(s.challengeType==='clean'){
+    let correctKept=0, distractorKept=0, correctRemoved=0;
+    document.querySelectorAll('#cleanArea .block').forEach(el=>{
+      const isCorrect = el.dataset.correct==='true';
+      const isRemoved = el.classList.contains('removed');
+      if(isCorrect && !isRemoved) correctKept++;
+      if(isCorrect && isRemoved) correctRemoved++;
+      if(!isCorrect && !isRemoved) distractorKept++;
+    });
+    wrongCount = distractorKept + correctRemoved;
+    accuracy = (correctKept - distractorKept - correctRemoved) / s.correctBlocks.length;
+    accuracy = Math.max(0, Math.min(1, accuracy));
+  } else {
+    if(choicePicked === 'optimized'){ accuracy = 1; }
+    else if(choicePicked === null){ accuracy = 0; wrongCount = 1; }
+    else { accuracy = 0.1; wrongCount = 1; }
+  }
+
+  wrongThisScenario = wrongCount;
+  totalWrong += wrongCount;
+  if(accuracy >= 0.99) correctCount++;
+
+  let points = Math.round(accuracy * 100);
+  points -= wrongCount * 10;
+  points -= hintUsedThisScenario ? 15 : 0;
+  const timeBonus = Math.max(0, 20 - elapsed);
+  points += timeBonus;
+
+  let bonus = 0;
+  if(accuracy >= 0.99 && !hintUsedThisScenario && elapsed <= 45){
+    bonus = 25; optimizationBonusCount++;
+  }
+  points += bonus;
+  points = Math.max(0, points);
+  totalScore += points;
+
+  scorePop(points, window.innerWidth/2, 140);
+  toast((accuracy>=0.99?"🎉 Perfect! ":"Scenario complete. ") + "+"+points+" pts" + (bonus?` (incl. +${bonus} optimization bonus)`:""));
+
+  document.getElementById('liveScore').textContent = totalScore;
+  showReveal(s, accuracy);
+}
+
+function showReveal(s, accuracy){
+  document.getElementById('resultReveal').classList.remove('hidden');
+  document.getElementById('resultHeadline').textContent =
+    accuracy>=0.8 ? "✅ Great prompting instincts!" : accuracy>=0.4 ? "⚠️ Decent attempt — room to optimize." : "❌ Let's review what optimal looks like.";
+  document.getElementById('weakOut').textContent = s.weakOutput;
+  document.getElementById('optOut').textContent = s.optimizedOutput;
+  document.getElementById('principleText').textContent = s.principle;
+  document.getElementById('optPromptRef').value = s.optimizedPrompt;
+}
+
+function nextScenario(){
+  curIdx++;
+  if(curIdx >= gameScenarios.length){ showReport(); return; }
+  loadScenario();
+}
+
+/* ---------------- REPORT ---------------- */
+function showReport(){
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-report').classList.remove('hidden');
+
+  const total = gameScenarios.length;
+  const accuracyPct = Math.round((correctCount/total)*100);
+  const maxPossible = total * 145; // rough ceiling per scenario
+  const scorePct = Math.min(100, Math.round((totalScore/maxPossible)*100));
+
+  document.getElementById('finalScore').textContent = totalScore;
+  document.getElementById('repAcc').textContent = accuracyPct + '%';
+  document.getElementById('repTime').textContent = totalElapsed + 's';
+  document.getElementById('repMoves').textContent = totalMoves;
+  document.getElementById('repWrong').textContent = totalWrong;
+  document.getElementById('repHints').textContent = totalHints;
+  document.getElementById('repBonus').textContent = optimizationBonusCount;
+
+  let rating, rankEmoji, rankTitle;
+  if(scorePct>=85){ rating="Elite Prompt Engineer"; rankEmoji="🏆"; rankTitle="Prompt Grandmaster"; }
+  else if(scorePct>=65){ rating="Skilled Prompt Crafter"; rankEmoji="🥈"; rankTitle="Prompt Architect"; }
+  else if(scorePct>=40){ rating="Developing Prompt Writer"; rankEmoji="🥉"; rankTitle="Prompt Apprentice"; }
+  else { rating="Prompt Novice"; rankEmoji="🌱"; rankTitle="Prompt Rookie"; }
+
+  document.getElementById('rankBadge').textContent = rankEmoji + " " + rankTitle;
+  document.getElementById('ratingText').textContent = rating;
+
+  const dna = {
+    Clarity: Math.min(100, accuracyPct + 5),
+    Specificity: Math.min(100, 100 - totalWrong*8),
+    Structure: Math.min(100, 100 - totalHints*10),
+    Constraints: Math.min(100, scorePct),
+    Efficiency: Math.min(100, Math.max(10, 100 - Math.round(totalElapsed/total))),
+    Conciseness: Math.min(100, 60 + optimizationBonusCount*8)
+  };
+  const dnaChart = document.getElementById('dnaChart');
+  dnaChart.innerHTML='';
+  Object.entries(dna).forEach(([k,v])=>{
+    const row = document.createElement('div'); row.className='dna-row';
+    row.innerHTML = `<div class="dna-label">${k}</div><div class="dna-bar-bg"><div class="dna-bar-fill" style="width:${v}%"></div></div><div>${v}%</div>`;
+    dnaChart.appendChild(row);
+  });
+
+  const feedbackParts = [];
+  feedbackParts.push(accuracyPct>=70 ? "You consistently identified the essential blocks of a strong prompt — role, context, and explicit constraints." : "You sometimes included distracting or vague elements; focus on trimming prompts to only what's necessary.");
+  feedbackParts.push(totalHints>2 ? "You leaned on hints often — try recalling the principles (role, specificity, constraints, audience) unaided next round." : "You relied on your own judgment more than hints — a strong sign of internalizing prompt principles.");
+  feedbackParts.push(optimizationBonusCount>=3 ? "Multiple optimization bonuses show you're recognizing the 'sweet spot' between too little and too much detail." : "Aim for the sweet spot: enough detail to be perspicuous, without over-engineering.");
+  document.getElementById('feedbackText').textContent = feedbackParts.join(' ');
+
+  const milestone = scorePct>=85 ? "Try Advanced difficulty to test multi-step, chained prompting scenarios."
+    : scorePct>=65 ? "Push for zero wrong placements next round to unlock 'Prompt Grandmaster'."
+    : "Focus on Constraint-Setting and Role Assignment — revisit the principle hints for each scenario type.";
+  document.getElementById('milestoneText').textContent = milestone;
+
+  document.getElementById('finalPromptBox').value =
+`Act as a [specific expert role].
+Here is the relevant context/code/data: [paste artifact].
+[State the exact task/action you want performed].
+[State constraints: what NOT to change, format, or scope limits].
+[State the output structure you expect, e.g. bullet points, code diff, test cases].`;
+}
+
+function replay(){
+  document.getElementById('screen-report').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
