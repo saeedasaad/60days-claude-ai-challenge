@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognitive Pattern Explorer</title>
+<style>
+  :root{
+    --bg:#10141a;
+    --bg-2:#0c0f14;
+    --surface:#171e27;
+    --surface-2:#1d2530;
+    --line:#2a323d;
+    --text:#e8ecef;
+    --text-dim:#93a0ad;
+    --text-faint:#5f6b78;
+    --analytical:#7fb8ac;
+    --emotional:#c6a4dd;
+    --overthinking:#e3b075;
+    --action:#e08a6c;
+    --balanced:#8fabd9;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:9px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --speed:1;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  body[data-mode="stress"]{
+    --speed:2.4;
+    --bg:#12100f;
+    --bg-2:#0d0b0a;
+    --surface:#1b1614;
+    --surface-2:#221b18;
+    --line:#332721;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    overflow-x:hidden;
+    transition:background .8s var(--ease);
+  }
+  h1,h2,h3{ font-family:var(--serif); font-weight:600; margin:0; letter-spacing:.2px; }
+  p{ margin:0; }
+  button{ font-family:inherit; }
+
+  /* ---------- Ambient background ---------- */
+  #ambient{
+    position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 15%, rgba(127,184,172,.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 80%, rgba(198,164,221,.09), transparent 60%),
+      var(--bg-2);
+    transition:background 1s var(--ease);
+  }
+  body[data-mode="stress"] #ambient{
+    background:
+      radial-gradient(ellipse 60% 40% at 25% 20%, rgba(224,138,108,.13), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 75%, rgba(227,176,117,.11), transparent 60%),
+      var(--bg-2);
+  }
+  .particle{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle, rgba(232,236,239,.35), transparent 70%);
+    filter:blur(1px);
+    animation:drift linear infinite;
+    opacity:.5;
+  }
+  @keyframes drift{
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    50%{ transform:translate3d(var(--dx,20px), var(--dy,-30px), 0) scale(1.08); }
+    100%{ transform:translate3d(0,0,0) scale(1); }
+  }
+
+  /* ---------- Layout shell ---------- */
+  .app{ position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; }
+  .screen{
+    flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;
+    padding:32px 20px 56px; opacity:0; transform:translateY(14px);
+    animation:enter .6s var(--ease) forwards;
+  }
+  .screen.active{ display:flex; }
+  @keyframes enter{ to{ opacity:1; transform:translateY(0); } }
+
+  .container{ width:100%; max-width:640px; margin:0 auto; }
+
+  /* ---------- Progress bar ---------- */
+  #progress-wrap{
+    position:fixed; top:0; left:0; right:0; z-index:5;
+    display:none; justify-content:center; padding:18px 16px 0;
+  }
+  #progress-wrap.show{ display:flex; }
+  .progress-track{
+    display:flex; align-items:center; gap:8px; background:rgba(23,30,39,.7);
+    backdrop-filter:blur(8px); padding:8px 14px; border-radius:999px; border:1px solid var(--line);
+  }
+  .progress-step{
+    width:8px; height:8px; border-radius:50%; background:var(--text-faint);
+    transition:all .5s var(--ease);
+  }
+  .progress-step.done{ background:var(--analytical); width:8px; }
+  .progress-step.current{ background:var(--text); width:22px; border-radius:5px; }
+  .progress-label{ font-size:12px; color:var(--text-dim); margin-left:6px; letter-spacing:.3px; }
+
+  /* ---------- Start screen ---------- */
+  .eyebrow{
+    font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--text-faint);
+    margin-bottom:14px; display:block;
+  }
+  .start-title{ font-size:clamp(32px,6vw,48px); line-height:1.1; }
+  .start-sub{
+    color:var(--text-dim); font-size:16px; line-height:1.6; margin-top:16px; max-width:480px;
+  }
+  .mode-picker{ display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+  .mode-btn{
+    flex:1; min-width:150px; background:var(--surface); border:1px solid var(--line);
+    color:var(--text); padding:16px; border-radius:var(--radius-md); cursor:pointer;
+    text-align:left; transition:border-color .3s var(--ease), transform .2s var(--ease), background .3s var(--ease);
+  }
+  .mode-btn strong{ display:block; font-size:15px; margin-bottom:4px; }
+  .mode-btn span{ font-size:13px; color:var(--text-dim); }
+  .mode-btn:hover{ transform:translateY(-2px); background:var(--surface-2); }
+  .mode-btn.selected{ border-color:var(--analytical); box-shadow:0 0 0 1px var(--analytical) inset; }
+  .mode-btn:focus-visible{ outline:2px solid var(--balanced); outline-offset:2px; }
+
+  .primary-btn{
+    margin-top:34px; background:var(--text); color:var(--bg-2); border:none;
+    padding:15px 30px; border-radius:999px; font-size:15px; font-weight:600; cursor:pointer;
+    transition:transform .25s var(--ease), opacity .25s var(--ease);
+  }
+  .primary-btn:hover{ transform:translateY(-2px); }
+  .primary-btn:active{ transform:translateY(0); }
+  .primary-btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .primary-btn:focus-visible{ outline:2px solid var(--balanced); outline-offset:3px; }
+
+  .ghost-btn{
+    background:transparent; border:1px solid var(--line); color:var(--text-dim);
+    padding:12px 22px; border-radius:999px; font-size:14px; cursor:pointer;
+    transition:border-color .25s var(--ease), color .25s var(--ease);
+  }
+  .ghost-btn:hover{ border-color:var(--text-dim); color:var(--text); }
+  .ghost-btn:focus-visible{ outline:2px solid var(--balanced); outline-offset:2px; }
+
+  /* ---------- Chapter headers ---------- */
+  .chapter-eyebrow{ color:var(--text-faint); font-size:13px; letter-spacing:1.5px; text-transform:uppercase; }
+  .chapter-title{ font-size:clamp(24px,4.5vw,32px); margin-top:8px; }
+  .chapter-intro{ color:var(--text-dim); font-size:14.5px; margin-top:10px; line-height:1.6; }
+
+  /* ---------- Chapter 1: scenarios ---------- */
+  .scenario-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:28px; margin-top:28px; width:100%;
+  }
+  .scenario-progress{ font-size:12px; color:var(--text-faint); margin-bottom:14px; }
+  .scenario-prompt{ font-size:18px; line-height:1.5; font-family:var(--serif); }
+  .option-list{ list-style:none; margin:22px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .option-btn{
+    width:100%; text-align:left; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--text); padding:14px 16px; border-radius:var(--radius-sm); cursor:pointer;
+    font-size:14.5px; line-height:1.45; transition:border-color .25s var(--ease), transform .15s var(--ease), background .25s var(--ease);
+  }
+  .option-btn:hover{ border-color:var(--text-dim); transform:translateX(2px); }
+  .option-btn:focus-visible{ outline:2px solid var(--balanced); outline-offset:2px; }
+  .option-btn.picked{ border-color:var(--analytical); background:rgba(127,184,172,.12); }
+
+  .nav-row{ display:flex; justify-content:space-between; align-items:center; margin-top:26px; width:100%; }
+
+  /* ---------- Drag list (shared: priorities + timeline) ---------- */
+  .drag-list{ list-style:none; margin:26px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; width:100%; }
+  .drag-item{
+    display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius-md); padding:14px 16px; cursor:grab; user-select:none;
+    transition:border-color .25s var(--ease), box-shadow .25s var(--ease), background .2s var(--ease);
+    touch-action:none;
+  }
+  .drag-item:focus-visible{ outline:2px solid var(--balanced); outline-offset:2px; }
+  .drag-item.dragging{ opacity:.55; border-color:var(--balanced); cursor:grabbing; z-index:10; }
+  .drag-rank{
+    width:26px; height:26px; border-radius:50%; background:var(--surface-2); color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;
+  }
+  .drag-label{ flex:1; font-size:14.5px; line-height:1.4; }
+  .drag-handle{ color:var(--text-faint); font-size:16px; flex-shrink:0; }
+  .timeline .drag-item{ position:relative; }
+  .timeline{ position:relative; padding-left:6px; }
+  .timeline::before{
+    content:''; position:absolute; left:19px; top:8px; bottom:8px; width:1px; background:var(--line);
+  }
+  .drag-hint{ font-size:12.5px; color:var(--text-faint); margin-top:14px; }
+
+  /* ---------- Journal ---------- */
+  .journal-header{ text-align:center; }
+  .dominant-card{
+    margin-top:26px; width:100%; background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius-lg); padding:26px; position:relative; overflow:hidden;
+  }
+  .dominant-card::before{
+    content:''; position:absolute; inset:0; opacity:.08; background:var(--accent, var(--analytical));
+  }
+  .dominant-label{ font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-faint); position:relative; }
+  .dominant-name{ font-size:26px; margin-top:6px; position:relative; }
+  .dominant-text{ margin-top:12px; color:var(--text-dim); font-size:14.5px; line-height:1.65; position:relative; }
+
+  .bars{ margin-top:26px; width:100%; display:flex; flex-direction:column; gap:14px; }
+  .bar-row{ display:flex; flex-direction:column; gap:6px; }
+  .bar-top{ display:flex; justify-content:space-between; font-size:13px; color:var(--text-dim); }
+  .bar-track{ height:8px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .bar-fill{ height:100%; width:0%; border-radius:6px; transition:width 1.1s var(--ease); }
+
+  .blend-note{
+    margin-top:26px; font-size:14px; color:var(--text-dim); line-height:1.7; border-left:2px solid var(--line);
+    padding-left:16px;
+  }
+  .disclaimer{
+    margin-top:30px; font-size:12px; color:var(--text-faint); line-height:1.6; text-align:center; max-width:480px;
+  }
+  .journal-actions{ margin-top:30px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:480px){
+    .scenario-card{ padding:20px; }
+    .drag-item{ padding:12px; }
+    .mode-picker{ flex-direction:column; }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    .particle{ display:none; }
+  }
+</style>
+</head>
+<body data-mode="calm">
+
+<div id="ambient" aria-hidden="true"></div>
+
+<div id="progress-wrap">
+  <div class="progress-track" role="progressbar" aria-label="Journey progress" aria-valuemin="1" aria-valuemax="4" id="progress-track">
+    <div class="progress-step" data-step="1"></div>
+    <div class="progress-step" data-step="2"></div>
+    <div class="progress-step" data-step="3"></div>
+    <div class="progress-step" data-step="4"></div>
+    <span class="progress-label" id="progress-label">Chapter 1</span>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- START SCREEN -->
+  <section class="screen active" id="screen-start">
+    <div class="container">
+      <span class="eyebrow">A quiet self-reflection experience</span>
+      <h1 class="start-title">Cognitive Pattern Explorer</h1>
+      <p class="start-sub">
+        Wander through a few everyday scenarios, sort some priorities, and map how your mind
+        tends to move through a decision. At the end you'll get a gentle, personal reflection —
+        not a verdict, just a mirror.
+      </p>
+
+      <div class="mode-picker" role="group" aria-label="Choose your mode">
+        <button class="mode-btn selected" id="mode-calm" data-mode="calm" aria-pressed="true">
+          <strong>Calm Mode</strong>
+          <span>Slow, quiet pacing and cool tones.</span>
+        </button>
+        <button class="mode-btn" id="mode-stress" data-mode="stress" aria-pressed="false">
+          <strong>Stress Mode</strong>
+          <span>A slightly quicker, warmer atmosphere.</span>
+        </button>
+      </div>
+
+      <button class="primary-btn" id="btn-start">Begin exploration</button>
+    </div>
+  </section>
+
+  <!-- CHAPTER 1 -->
+  <section class="screen" id="screen-ch1">
+    <div class="container">
+      <span class="chapter-eyebrow">Chapter 1</span>
+      <h2 class="chapter-title">Discover your thinking style</h2>
+      <p class="chapter-intro">Read each moment and choose the response that feels most like your real first instinct — not the one you think sounds best.</p>
+
+      <div class="scenario-card">
+        <div class="scenario-progress" id="ch1-progress">Scenario 1 of 5</div>
+        <p class="scenario-prompt" id="ch1-prompt"></p>
+        <ul class="option-list" id="ch1-options"></ul>
+      </div>
+
+      <div class="nav-row">
+        <button class="ghost-btn" id="ch1-back">Back</button>
+        <button class="primary-btn" id="ch1-next" disabled>Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section class="screen" id="screen-ch2">
+    <div class="container">
+      <span class="chapter-eyebrow">Chapter 2</span>
+      <h2 class="chapter-title">Choose your priorities</h2>
+      <p class="chapter-intro">Drag to rank these from what matters most to you when deciding (top) to what matters least (bottom).</p>
+
+      <ul class="drag-list" id="ch2-list"></ul>
+      <p class="drag-hint">Drag with a mouse or your finger, or focus a card and use the Up / Down arrow keys.</p>
+
+      <div class="nav-row">
+        <button class="ghost-btn" id="ch2-back">Back</button>
+        <button class="primary-btn" id="ch2-next">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 3 -->
+  <section class="screen" id="screen-ch3">
+    <div class="container">
+      <span class="chapter-eyebrow">Chapter 3</span>
+      <h2 class="chapter-title">Map your thinking</h2>
+      <p class="chapter-intro">Now arrange these in the order they usually happen for you — from what comes first in your mind to what comes last.</p>
+
+      <ul class="drag-list timeline" id="ch3-list"></ul>
+      <p class="drag-hint">Drag to reorder, or focus an item and use the Up / Down arrow keys.</p>
+
+      <div class="nav-row">
+        <button class="ghost-btn" id="ch3-back">Back</button>
+        <button class="primary-btn" id="ch3-next">See my reflection</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="screen" id="screen-journal">
+    <div class="container">
+      <div class="journal-header">
+        <span class="chapter-eyebrow">Final reflection</span>
+        <h2 class="chapter-title">Your reflection journal</h2>
+        <p class="chapter-intro">Here's what your choices suggest — held loosely, not as a label.</p>
+      </div>
+
+      <div class="dominant-card" id="dominant-card">
+        <span class="dominant-label">Your leading pattern</span>
+        <h3 class="dominant-name" id="dominant-name"></h3>
+        <p class="dominant-text" id="dominant-text"></p>
+      </div>
+
+      <div class="bars" id="bars"></div>
+
+      <p class="blend-note" id="blend-note"></p>
+
+      <p class="disclaimer">
+        This is an educational, self-reflection experience — not a psychological test or clinical
+        assessment. It can't diagnose anything, and your patterns can shift day to day.
+      </p>
+
+      <div class="journal-actions">
+        <button class="ghost-btn" id="btn-restart">Start over</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============ Trait meta ============ */
+  var TRAITS = {
+    analytical:   { label:'Analytical Thinker',        color:'var(--analytical)',
+      text:"You often reach for logic, structure, and evidence before anything else. This suggests a mind that finds steadiness in breaking a big, messy problem into smaller pieces it can actually solve." },
+    emotional:    { label:'Emotional Intuitive',       color:'var(--emotional)',
+      text:"You often check in with how something feels — for you and for others — before you check the facts. This suggests a mind that treats emotional information as real information, not noise." },
+    overthinking: { label:'Overthinking Loop Style',   color:'var(--overthinking)',
+      text:"You often revisit the same thought from a few different angles before you're ready to settle. This suggests a mind that values thoroughness, even when that means circling back more than once." },
+    action:       { label:'Action-First Decision Maker', color:'var(--action)',
+      text:"You often move before every detail is settled, trusting you can adjust along the way. This suggests a mind that treats momentum itself as useful information." },
+    balanced:     { label:'Balanced Reflective Thinker', color:'var(--balanced)',
+      text:"You often let logic and feeling take turns, pausing just long enough to weigh both before you commit. This suggests a mind that's comfortable holding two kinds of information at once." }
+  };
+  var TRAIT_ORDER = ['analytical','emotional','overthinking','action','balanced'];
+
+  /* ============ Scenario data (Chapter 1) ============ */
+  var scenarios = [
+    { prompt:"Your team's plan falls apart the night before a deadline. What's your first instinct?",
+      options:[
+        {trait:'analytical', text:"Break the problem into pieces and rebuild a step-by-step plan."},
+        {trait:'emotional', text:"Check in with the team — how is everyone feeling about it?"},
+        {trait:'overthinking', text:"Replay every decision that led here, looking for what went wrong."},
+        {trait:'action', text:"Start fixing whatever's most broken, right now."},
+        {trait:'balanced', text:"Take a breath, size up the two biggest risks, then decide calmly."}
+      ]},
+    { prompt:"A close friend seems distant lately. How do you approach it?",
+      options:[
+        {trait:'analytical', text:"Think back over recent interactions for a concrete reason."},
+        {trait:'emotional', text:"Trust your gut that something's off and gently ask how they're doing."},
+        {trait:'overthinking', text:"Turn it over for days, imagining several ways it could've started."},
+        {trait:'action', text:"Just message them directly and ask what's going on."},
+        {trait:'balanced', text:"Give it a little space, then check in once, without overanalyzing."}
+      ]},
+    { prompt:"You're about to make a big purchase you've never made before. What do you do?",
+      options:[
+        {trait:'analytical', text:"Build a comparison list of specs, prices, and reviews."},
+        {trait:'emotional', text:"Notice which option simply feels right when you imagine owning it."},
+        {trait:'overthinking', text:"Keep reopening tabs, worried you'll regret whichever one you pick."},
+        {trait:'action', text:"Pick a solid option quickly so you can stop thinking about it."},
+        {trait:'balanced', text:"Do a quick round of research, then trust your instinct to close it out."}
+      ]},
+    { prompt:"You're at a fork in your career and the right move isn't obvious. What happens first?",
+      options:[
+        {trait:'analytical', text:"List out the pros, cons, and long-term trajectory of each path."},
+        {trait:'emotional', text:"Ask yourself which option actually excites or energizes you."},
+        {trait:'overthinking', text:"Go back and forth, worried that picking wrong will haunt you."},
+        {trait:'action', text:"Pick a direction and treat it as a real experiment you can adjust."},
+        {trait:'balanced', text:"Sit with it for a day, weigh the key facts and feelings, then choose."}
+      ]},
+    { prompt:"You just noticed a mistake you made at work. What's your very next move?",
+      options:[
+        {trait:'analytical', text:"Trace exactly where the process broke down so it won't repeat."},
+        {trait:'emotional', text:"Think about who might be affected and how they'll feel about it."},
+        {trait:'overthinking', text:"Mentally replay the moment, wondering if you should've caught it sooner."},
+        {trait:'action', text:"Fix what you can immediately, then flag it to whoever needs to know."},
+        {trait:'balanced', text:"Acknowledge it plainly, fix what's urgent, and note a lesson for later."}
+      ]}
+  ];
+
+  /* ============ Priority cards (Chapter 2) ============ */
+  var priorityCardsBase = [
+    { id:'p-analytical', trait:'analytical', label:'Clear logic and evidence' },
+    { id:'p-emotional', trait:'emotional', label:'How the people involved will feel' },
+    { id:'p-overthinking', trait:'overthinking', label:'Thoroughness — even if it means revisiting things' },
+    { id:'p-action', trait:'action', label:'Moving quickly and adjusting later' },
+    { id:'p-balanced', trait:'balanced', label:'A calm balance between thinking and doing' }
+  ];
+
+  /* ============ Timeline steps (Chapter 3) ============ */
+  var timelineStepsBase = [
+    { id:'t-analytical', trait:'analytical', label:'I gather facts and compare the options' },
+    { id:'t-emotional', trait:'emotional', label:'I notice how I feel about each option' },
+    { id:'t-overthinking', trait:'overthinking', label:'I go back over the same thoughts more than once' },
+    { id:'t-action', trait:'action', label:'I make a call and move on' },
+    { id:'t-balanced', trait:'balanced', label:'I pause, weigh gut and facts together, then commit' }
+  ];
+
+  /* ============ State ============ */
+  var state = {
+    mode:'calm',
+    ch1Index:0,
+    ch1Answers:[],           // trait per question, or null
+    ch2Order:null,
+    ch3Order:null,
+    scores:null
+  };
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+    }
+    return a;
+  }
+
+  /* ============ Ambient particles ============ */
+  function buildParticles(){
+    var host = document.getElementById('ambient');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce) return;
+    var count = 16;
+    for(var i=0;i<count;i++){
+      var el = document.createElement('div');
+      el.className='particle';
+      var size = 60 + Math.random()*140;
+      el.style.width = size+'px';
+      el.style.height = size+'px';
+      el.style.left = (Math.random()*100)+'%';
+      el.style.top = (Math.random()*100)+'%';
+      el.style.setProperty('--dx', (Math.random()*60-30)+'px');
+      el.style.setProperty('--dy', (Math.random()*60-30)+'px');
+      var dur = (14 + Math.random()*16);
+      el.style.animationDuration = dur+'s';
+      el.style.animationDelay = (-Math.random()*dur)+'s';
+      host.appendChild(el);
+    }
+  }
+
+  /* ============ Screen navigation ============ */
+  var screens = ['screen-start','screen-ch1','screen-ch2','screen-ch3','screen-journal'];
+  function showScreen(id){
+    screens.forEach(function(s){
+      var el = document.getElementById(s);
+      el.classList.remove('active');
+    });
+    var target = document.getElementById(id);
+    target.classList.add('active');
+    target.style.animation = 'none';
+    // force reflow to restart animation
+    void target.offsetWidth;
+    target.style.animation = '';
+    var focusTarget = target.querySelector('h1, h2');
+    if(focusTarget){ focusTarget.setAttribute('tabindex','-1'); focusTarget.focus({preventScroll:true}); }
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant':'auto'});
+    updateProgress(id);
+  }
+
+  function updateProgress(id){
+    var wrap = document.getElementById('progress-wrap');
+    var map = { 'screen-ch1':1, 'screen-ch2':2, 'screen-ch3':3, 'screen-journal':4 };
+    if(!map[id]){ wrap.classList.remove('show'); return; }
+    wrap.classList.add('show');
+    var current = map[id];
+    var labels = ['Chapter 1','Chapter 2','Chapter 3','Reflection'];
+    document.getElementById('progress-label').textContent = labels[current-1];
+    var steps = document.querySelectorAll('.progress-step');
+    steps.forEach(function(step){
+      var n = Number(step.dataset.step);
+      step.classList.remove('done','current');
+      if(n < current) step.classList.add('done');
+      else if(n === current) step.classList.add('current');
+    });
+  }
+
+  /* ============ Mode picker ============ */
+  document.getElementById('mode-calm').addEventListener('click', function(){ setMode('calm'); });
+  document.getElementById('mode-stress').addEventListener('click', function(){ setMode('stress'); });
+  function setMode(mode){
+    state.mode = mode;
+    document.body.setAttribute('data-mode', mode);
+    ['calm','stress'].forEach(function(m){
+      var btn = document.getElementById('mode-'+m);
+      var picked = m===mode;
+      btn.classList.toggle('selected', picked);
+      btn.setAttribute('aria-pressed', picked ? 'true':'false');
+    });
+  }
+
+  document.getElementById('btn-start').addEventListener('click', function(){
+    startChapter1();
+    showScreen('screen-ch1');
+  });
+
+  /* ============ Chapter 1 logic ============ */
+  function startChapter1(){
+    state.ch1Index = 0;
+    state.ch1Answers = new Array(scenarios.length).fill(null);
+    renderScenario();
+  }
+
+  function renderScenario(){
+    var i = state.ch1Index;
+    var s = scenarios[i];
+    document.getElementById('ch1-progress').textContent = 'Scenario ' + (i+1) + ' of ' + scenarios.length;
+    document.getElementById('ch1-prompt').textContent = s.prompt;
+    var list = document.getElementById('ch1-options');
+    list.innerHTML = '';
+    var shuffled = shuffle(s.options);
+    shuffled.forEach(function(opt){
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.type = 'button';
+      btn.textContent = opt.text;
+      if(state.ch1Answers[i] === opt.trait) btn.classList.add('picked');
+      btn.addEventListener('click', function(){
+        state.ch1Answers[i] = opt.trait;
+        Array.prototype.forEach.call(list.querySelectorAll('.option-btn'), function(b){ b.classList.remove('picked'); });
+        btn.classList.add('picked');
+        document.getElementById('ch1-next').disabled = false;
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+    document.getElementById('ch1-next').disabled = state.ch1Answers[i] === null;
+    document.getElementById('ch1-next').textContent = (i === scenarios.length-1) ? 'Continue' : 'Next';
+    document.getElementById('ch1-back').style.visibility = (i===0) ? 'hidden' : 'visible';
+  }
+
+  document.getElementById('ch1-next').addEventListener('click', function(){
+    if(state.ch1Index < scenarios.length-1){
+      state.ch1Index++;
+      renderScenario();
+    } else {
+      buildChapter2();
+      showScreen('screen-ch2');
+    }
+  });
+  document.getElementById('ch1-back').addEventListener('click', function(){
+    if(state.ch1Index > 0){
+      state.ch1Index--;
+      renderScenario();
+    } else {
+      showScreen('screen-start');
+    }
+  });
+
+  /* ============ Reusable drag/reorder component ============ */
+  function makeReorderable(containerEl, items, onUpdate){
+    var dragIndex = null;
+    var touchStartY = 0;
+
+    function render(){
+      containerEl.innerHTML = '';
+      items.forEach(function(item, idx){
+        var li = document.createElement('li');
+        li.className = 'drag-item';
+        li.draggable = true;
+        li.tabIndex = 0;
+        li.dataset.index = idx;
+        li.setAttribute('role','option');
+        li.setAttribute('aria-roledescription','Draggable item, use arrow keys to reorder');
+
+        var rank = document.createElement('span');
+        rank.className = 'drag-rank';
+        rank.textContent = idx+1;
+
+        var label = document.createElement('span');
+        label.className = 'drag-label';
+        label.textContent = item.label;
+
+        var handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '\u283F';
+
+        li.appendChild(rank);
+        li.appendChild(label);
+        li.appendChild(handle);
+
+        li.addEventListener('keydown', function(e){
+          if(e.key === 'ArrowUp' && idx > 0){
+            e.preventDefault();
+            swap(idx, idx-1);
+            render();
+            focusIndex(idx-1);
+            onUpdate(items);
+          } else if(e.key === 'ArrowDown' && idx < items.length-1){
+            e.preventDefault();
+            swap(idx, idx+1);
+            render();
+            focusIndex(idx+1);
+            onUpdate(items);
+          }
+        });
+
+        li.addEventListener('dragstart', function(e){
+          dragIndex = idx;
+          li.classList.add('dragging');
+          try{ e.dataTransfer.setData('text/plain', String(idx)); }catch(err){}
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        li.addEventListener('dragend', function(){
+          li.classList.remove('dragging');
+          dragIndex = null;
+          onUpdate(items);
+        });
+        li.addEventListener('dragover', function(e){
+          e.preventDefault();
+          if(dragIndex === null) return;
+          var targetIdx = Number(li.dataset.index);
+          if(dragIndex === targetIdx) return;
+          var rect = li.getBoundingClientRect();
+          var before = (e.clientY - rect.top) < rect.height/2;
+          var newIdx = before ? targetIdx : targetIdx+1;
+          if(newIdx === dragIndex || newIdx === dragIndex+1) return;
+          moveItem(dragIndex, newIdx);
+        });
+        li.addEventListener('drop', function(e){ e.preventDefault(); });
+
+        li.addEventListener('touchstart', function(e){
+          dragIndex = idx;
+          touchStartY = e.touches[0].clientY;
+          li.classList.add('dragging');
+        }, {passive:true});
+        li.addEventListener('touchmove', function(e){
+          if(dragIndex === null) return;
+          var touchY = e.touches[0].clientY;
+          var children = Array.prototype.slice.call(containerEl.children);
+          for(var k=0;k<children.length;k++){
+            if(k === dragIndex) continue;
+            var r = children[k].getBoundingClientRect();
+            if(touchY > r.top && touchY < r.bottom){
+              moveItem(dragIndex, k > dragIndex ? k+1 : k);
+              touchStartY = touchY;
+              break;
+            }
+          }
+        }, {passive:true});
+        li.addEventListener('touchend', function(){
+          dragIndex = null;
+          var draggingEl = containerEl.querySelector('.dragging');
+          if(draggingEl) draggingEl.classList.remove('dragging');
+          onUpdate(items);
+        });
+
+        containerEl.appendChild(li);
+      });
+    }
+
+    function focusIndex(idx){
+      var el = containerEl.children[idx];
+      if(el) el.focus();
+    }
+
+    function swap(a,b){
+      var tmp = items[a]; items[a] = items[b]; items[b] = tmp;
+    }
+
+    function moveItem(from, to){
+      if(to > items.length) to = items.length;
+      var moved = items.splice(from,1)[0];
+      var insertAt = to > from ? to-1 : to;
+      items.splice(insertAt, 0, moved);
+      dragIndex = insertAt;
+      render();
+      var el = containerEl.children[insertAt];
+      if(el) el.classList.add('dragging');
+    }
+
+    render();
+    return { render: render };
+  }
+
+  /* ============ Chapter 2 ============ */
+  var ch2Reorder = null;
+  function buildChapter2(){
+    state.ch2Order = shuffle(priorityCardsBase);
+    var list = document.getElementById('ch2-list');
+    ch2Reorder = makeReorderable(list, state.ch2Order, function(items){ state.ch2Order = items; });
+  }
+  document.getElementById('ch2-next').addEventListener('click', function(){
+    buildChapter3();
+    showScreen('screen-ch3');
+  });
+  document.getElementById('ch2-back').addEventListener('click', function(){
+    state.ch1Index = scenarios.length-1;
+    renderScenario();
+    showScreen('screen-ch1');
+  });
+
+  /* ============ Chapter 3 ============ */
+  var ch3Reorder = null;
+  function buildChapter3(){
+    state.ch3Order = shuffle(timelineStepsBase);
+    var list = document.getElementById('ch3-list');
+    ch3Reorder = makeReorderable(list, state.ch3Order, function(items){ state.ch3Order = items; });
+  }
+  document.getElementById('ch3-next').addEventListener('click', function(){
+    computeScores();
+    renderJournal();
+    showScreen('screen-journal');
+  });
+  document.getElementById('ch3-back').addEventListener('click', function(){
+    showScreen('screen-ch2');
+  });
+
+  /* ============ Scoring ============ */
+  function computeScores(){
+    var scores = { analytical:0, emotional:0, overthinking:0, action:0, balanced:0 };
+
+    state.ch1Answers.forEach(function(trait){
+      if(trait) scores[trait] += 3;
+    });
+
+    var rankWeights = [5,4,3,2,1];
+    state.ch2Order.forEach(function(item, idx){
+      scores[item.trait] += rankWeights[idx];
+    });
+    state.ch3Order.forEach(function(item, idx){
+      scores[item.trait] += rankWeights[idx];
+    });
+
+    state.scores = scores;
+  }
+
+  function toPercentages(scores){
+    var total = 0;
+    TRAIT_ORDER.forEach(function(t){ total += scores[t]; });
+    if(total === 0) total = 1;
+    var raw = {};
+    var floors = {};
+    var remainders = [];
+    var sumFloor = 0;
+    TRAIT_ORDER.forEach(function(t){
+      var exact = (scores[t] / total) * 100;
+      raw[t] = exact;
+      var f = Math.floor(exact);
+      floors[t] = f;
+      sumFloor += f;
+      remainders.push({ t:t, r: exact - f });
+    });
+    var leftover = 100 - sumFloor;
+    remainders.sort(function(a,b){ return b.r - a.r; });
+    for(var i=0;i<leftover;i++){ floors[remainders[i % remainders.length].t] += 1; }
+    return floors;
+  }
+
+  /* ============ Journal rendering ============ */
+  function renderJournal(){
+    var pct = toPercentages(state.scores);
+    var ranked = TRAIT_ORDER.slice().sort(function(a,b){ return pct[b]-pct[a]; });
+    var top = ranked[0];
+    var second = ranked[1];
+
+    var card = document.getElementById('dominant-card');
+    card.style.setProperty('--accent', TRAITS[top].color);
+    document.getElementById('dominant-name').textContent = TRAITS[top].label;
+    document.getElementById('dominant-name').style.color = TRAITS[top].color;
+    document.getElementById('dominant-text').textContent = TRAITS[top].text;
+
+    var barsHost = document.getElementById('bars');
+    barsHost.innerHTML = '';
+    ranked.forEach(function(t){
+      var row = document.createElement('div');
+      row.className = 'bar-row';
+      var topRow = document.createElement('div');
+      topRow.className = 'bar-top';
+      var nameSpan = document.createElement('span');
+      nameSpan.textContent = TRAITS[t].label;
+      var pctSpan = document.createElement('span');
+      pctSpan.textContent = pct[t] + '%';
+      topRow.appendChild(nameSpan);
+      topRow.appendChild(pctSpan);
+      var track = document.createElement('div');
+      track.className = 'bar-track';
+      var fill = document.createElement('div');
+      fill.className = 'bar-fill';
+      fill.style.background = TRAITS[t].color;
+      track.appendChild(fill);
+      row.appendChild(topRow);
+      row.appendChild(track);
+      barsHost.appendChild(row);
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ fill.style.width = pct[t] + '%'; });
+      });
+    });
+
+    document.getElementById('blend-note').textContent =
+      'Your thinking often blends the ' + TRAITS[top].label.toLowerCase() + ' with a touch of ' +
+      TRAITS[second].label.toLowerCase() + '. Patterns like these tend to shift with context — ' +
+      'a stressful week can bring out a different side than a calm one.';
+  }
+
+  document.getElementById('btn-restart').addEventListener('click', function(){
+    state.ch1Index = 0;
+    state.ch1Answers = [];
+    state.ch2Order = null;
+    state.ch3Order = null;
+    state.scores = null;
+    showScreen('screen-start');
+  });
+
+  /* ============ Init ============ */
+  buildParticles();
+  updateProgress('screen-start');
+})();
+</script>
+</body>
+</html>
