@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center — Student Finance</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --surface-alt:#E3E9ED; --surface-raise:#FFFFFF;
+  --ink:#1B2430; --ink-soft:#5B6B7A; --ink-faint:#8A98A5;
+  --teal:#1F8A70; --teal-soft:#D9EFE8;
+  --amber:#C9820A; --amber-soft:#FBEACB;
+  --red:#C93A2E; --red-soft:#FBE0DD;
+  --border:#D3DBE0; --border-soft:#E4E9EC;
+  --shadow: 0 1px 2px rgba(20,30,40,.04), 0 8px 24px rgba(20,30,40,.06);
+  --radius: 14px;
+  --font-display: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-body: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+[data-theme="dark"]{
+  --bg:#0F1720; --surface:#16212C; --surface-alt:#1D2A37; --surface-raise:#1B2733;
+  --ink:#EAF0F4; --ink-soft:#93A5B4; --ink-faint:#5E7182;
+  --teal:#2EBE9C; --teal-soft:#173229;
+  --amber:#F5B94F; --amber-soft:#332609;
+  --red:#FF6B5D; --red-soft:#3A1815;
+  --border:#263644; --border-soft:#1F2C39;
+  --shadow: 0 1px 2px rgba(0,0,0,.2), 0 12px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body);
+  transition:background .25s ease, color .25s ease; -webkit-font-smoothing:antialiased;
+}
+::selection{ background: var(--teal); color:#fff; }
+a{ color: var(--teal); }
+button{ font-family:inherit; }
+.mono{ font-family:var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-faint); font-weight:600;
+}
+h1,h2,h3,h4{ font-family:var(--font-display); margin:0; letter-spacing:-.01em; }
+p{ margin:0; }
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-thumb{ background:var(--border); border-radius:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+
+/* ============ LAYOUT SHELL ============ */
+.app{ display:flex; min-height:100vh; }
+
+.sidebar{
+  width:236px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh; z-index:40;
+  transition:transform .25s ease;
+}
+.sidebar-brand{
+  padding:20px 18px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-soft);
+}
+.brand-mark{
+  width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--amber));
+  display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;
+}
+.brand-text{ font-family:var(--font-display); font-weight:800; font-size:14.5px; line-height:1.15; }
+.brand-text small{ display:block; font-family:var(--font-mono); font-weight:500; font-size:10px; color:var(--ink-faint); letter-spacing:.08em; text-transform:uppercase; margin-top:2px;}
+
+.nav{ flex:1; overflow-y:auto; padding:12px 10px; }
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:10px; cursor:pointer;
+  color:var(--ink-soft); font-size:13.5px; font-weight:600; margin-bottom:2px; user-select:none;
+  border:1px solid transparent; transition:background .15s, color .15s;
+}
+.nav-item:hover{ background:var(--surface-alt); color:var(--ink); }
+.nav-item.active{ background:var(--teal-soft); color:var(--teal); }
+.nav-item .ic{ width:18px; text-align:center; font-size:15px; }
+.nav-section-label{ font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); padding:14px 12px 6px; }
+
+.sidebar-foot{ padding:14px; border-top:1px solid var(--border-soft); }
+.score-chip{
+  display:flex; align-items:center; gap:10px; background:var(--surface-alt); border-radius:12px; padding:10px 12px;
+}
+.score-chip .num{ font-family:var(--font-mono); font-weight:800; font-size:19px; }
+.score-chip .lbl{ font-size:10.5px; color:var(--ink-soft); line-height:1.3; }
+
+.main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+.topbar{
+  position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 26px; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--border-soft);
+}
+.topbar-title{ font-family:var(--font-display); font-weight:800; font-size:18px; }
+.topbar-sub{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); margin-top:2px;}
+.topbar-actions{ display:flex; align-items:center; gap:8px; }
+.iconbtn{
+  width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--surface);
+  color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px;
+  transition:transform .15s, background .15s;
+}
+.iconbtn:hover{ background:var(--surface-alt); transform:translateY(-1px); }
+.hamburger{ display:none; }
+
+.content{ padding:22px 26px 60px; max-width:1180px; width:100%; margin:0 auto; }
+.view{ display:none; animation:fadein .35s ease; }
+.view.active{ display:block; }
+@keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+.section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:30px 0 14px; flex-wrap:wrap; gap:8px;}
+.section-head h2{ font-size:20px; }
+.section-head .desc{ color:var(--ink-soft); font-size:13px; margin-top:3px; }
+.view > .section-head:first-child{ margin-top:0; }
+
+/* ============ GRID / CARDS ============ */
+.grid{ display:grid; gap:14px; }
+.grid-4{ grid-template-columns:repeat(4,1fr); }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+.grid-2{ grid-template-columns:repeat(2,1fr); }
+@media(max-width:980px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);} .grid-2{grid-template-columns:1fr;} }
+@media(max-width:560px){ .grid-4{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} }
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:18px; box-shadow:var(--shadow);
+}
+.card-title{ font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+.card-title .hint{ font-weight:500; color:var(--ink-faint); font-size:11px; }
+
+.stat-card{ padding:16px 18px; }
+.stat-card .eyebrow{ margin-bottom:8px; }
+.stat-card .val{ font-family:var(--font-mono); font-size:26px; font-weight:800; letter-spacing:-.02em; }
+.stat-card .sub{ font-size:12px; color:var(--ink-soft); margin-top:6px; display:flex; align-items:center; gap:5px;}
+.pill{ display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; font-family:var(--font-mono);}
+.pill.up{ background:var(--teal-soft); color:var(--teal); }
+.pill.down{ background:var(--red-soft); color:var(--red); }
+.pill.warn{ background:var(--amber-soft); color:var(--amber); }
+
+/* ============ BOARDING PASS HERO ============ */
+.boardingpass{
+  position:relative; border-radius:18px; overflow:hidden; background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow); display:grid; grid-template-columns: 1fr 220px;
+}
+@media(max-width:760px){ .boardingpass{ grid-template-columns:1fr; } }
+.bp-main{ padding:24px 26px; position:relative; }
+.bp-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.bp-brand{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);}
+.bp-class{ font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--teal); background:var(--teal-soft); padding:4px 10px; border-radius:99px; letter-spacing:.06em;}
+.bp-route{ display:flex; align-items:center; gap:16px; margin:6px 0 22px; }
+.bp-point{ min-width:0; }
+.bp-point .code{ font-family:var(--font-mono); font-size:30px; font-weight:800; line-height:1; }
+.bp-point .lbl{ font-size:11px; color:var(--ink-soft); margin-top:5px; }
+.bp-path{ flex:1; position:relative; height:20px; display:flex; align-items:center; }
+.bp-path::before{
+  content:""; position:absolute; left:0; right:0; top:50%; height:2px; border-top:2px dashed var(--border);
+}
+.bp-path-fill{ position:absolute; left:0; top:50%; height:2px; background:var(--teal); transform:translateY(-1px); border-radius:2px;}
+.bp-plane{ position:absolute; top:50%; transform:translate(-50%,-50%); font-size:16px; transition:left .6s ease; }
+.bp-meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.bp-meta div .eyebrow{ margin-bottom:4px; }
+.bp-meta div .v{ font-family:var(--font-mono); font-weight:700; font-size:14px; }
+.bp-perf{
+  position:relative; background:linear-gradient(135deg, var(--teal), #14654F); color:#fff; padding:24px 20px;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+[data-theme="dark"] .bp-perf{ background:linear-gradient(135deg, var(--teal), #0E4438); }
+.bp-perf::before{
+  content:""; position:absolute; left:-10px; top:0; bottom:0; width:20px;
+  background-image: radial-gradient(circle at 10px 0, transparent 9px, var(--surface) 9px);
+  background-size: 20px 20px; background-repeat:repeat-y;
+}
+.bp-score{ text-align:center; }
+.bp-score .n{ font-family:var(--font-mono); font-size:44px; font-weight:800; line-height:1; }
+.bp-score .l{ font-size:11px; opacity:.85; margin-top:6px; letter-spacing:.04em; }
+.bp-barcode{ height:34px; background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.9) 0 2px, transparent 2px 5px, rgba(255,255,255,.5) 5px 6px, transparent 6px 9px); border-radius:3px; margin-top:14px;}
+.bp-seat{ font-family:var(--font-mono); font-size:10.5px; opacity:.85; margin-top:8px; text-align:center; letter-spacing:.05em;}
+
+/* ============ FORMS ============ */
+.field{ margin-bottom:12px; }
+.field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+.input, select.input, textarea.input{
+  width:100%; padding:9px 11px; border-radius:9px; border:1px solid var(--border); background:var(--bg);
+  color:var(--ink); font-size:13.5px; font-family:var(--font-body); outline:none; transition:border .15s, box-shadow .15s;
+}
+.input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-soft); }
+.row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+@media(max-width:560px){ .row-2,.row-3{ grid-template-columns:1fr; } }
+
+.btn{
+  display:inline-flex; align-items:center; gap:7px; justify-content:center; padding:9px 16px; border-radius:10px;
+  border:1px solid var(--border); background:var(--surface); color:var(--ink); font-weight:700; font-size:13px;
+  cursor:pointer; transition:transform .12s, background .15s; white-space:nowrap;
+}
+.btn:hover{ transform:translateY(-1px); background:var(--surface-alt); }
+.btn:active{ transform:translateY(0); }
+.btn-primary{ background:var(--teal); border-color:var(--teal); color:#fff; }
+.btn-primary:hover{ background:#1a7a63; }
+.btn-danger{ background:transparent; border-color:var(--red); color:var(--red); }
+.btn-block{ width:100%; }
+.btn-sm{ padding:6px 11px; font-size:12px; border-radius:8px; }
+.btn-ghost{ background:transparent; border-color:transparent; }
+.btn-ghost:hover{ background:var(--surface-alt); }
+
+/* ============ TABLES / LISTS ============ */
+.list{ display:flex; flex-direction:column; gap:8px; }
+.list-row{
+  display:flex; align-items:center; justify-content:space-between; padding:11px 13px; border-radius:10px;
+  background:var(--bg); border:1px solid var(--border-soft); gap:10px;
+}
+.list-row .lr-main{ display:flex; align-items:center; gap:11px; min-width:0; }
+.list-row .lr-icon{ width:34px; height:34px; border-radius:9px; background:var(--surface-alt); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.list-row .lr-title{ font-weight:700; font-size:13.5px; }
+.list-row .lr-sub{ font-size:11.5px; color:var(--ink-faint); }
+.list-row .lr-amt{ font-family:var(--font-mono); font-weight:700; font-size:13.5px; flex-shrink:0; }
+.list-row .lr-del{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:14px; padding:4px; flex-shrink:0;}
+.list-row .lr-del:hover{ color:var(--red); }
+.empty-state{ text-align:center; padding:26px 10px; color:var(--ink-faint); font-size:12.5px; }
+
+/* ============ PROGRESS ============ */
+.progress{ height:9px; border-radius:99px; background:var(--surface-alt); overflow:hidden; }
+.progress > div{ height:100%; border-radius:99px; background:var(--teal); transition:width .5s ease; }
+.progress.over > div{ background:var(--red); }
+.progress.warn > div{ background:var(--amber); }
+
+/* ============ TABS within module ============ */
+.subtabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+.subtab{ padding:7px 13px; border-radius:9px; border:1px solid var(--border); background:var(--surface); font-size:12.5px; font-weight:700; cursor:pointer; color:var(--ink-soft); }
+.subtab.active{ background:var(--teal); border-color:var(--teal); color:#fff; }
+
+/* ============ CHARTS ============ */
+.chart-wrap{ width:100%; }
+.legend{ display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:12px; }
+.legend-item{ display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-soft); }
+.legend-dot{ width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+
+/* ============ INSIGHTS ============ */
+.insight{ display:flex; gap:12px; padding:14px; border-radius:12px; background:var(--surface); border:1px solid var(--border); margin-bottom:10px; }
+.insight .ic{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.insight.good .ic{ background:var(--teal-soft); }
+.insight.warn .ic{ background:var(--amber-soft); }
+.insight.bad .ic{ background:var(--red-soft); }
+.insight .body{ font-size:13px; }
+.insight .body strong{ display:block; margin-bottom:2px; font-size:13.5px; }
+.insight .body span{ color:var(--ink-soft); font-size:12.3px; line-height:1.5; }
+
+/* ============ CHECKLIST ============ */
+.check-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--bg); border:1px solid var(--border-soft); margin-bottom:7px; cursor:pointer;}
+.check-item input{ width:17px; height:17px; accent-color:var(--teal); cursor:pointer;}
+.check-item.done .txt{ text-decoration:line-through; color:var(--ink-faint); }
+.check-item .txt{ font-size:13px; }
+
+/* ============ TIPS ============ */
+.tip-card{ padding:16px; border-radius:12px; background:var(--surface-alt); border:1px solid var(--border-soft);}
+.tip-card .tag{ font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:700; }
+.tip-card h4{ font-size:14px; margin:6px 0 6px; }
+.tip-card p{ font-size:12.5px; color:var(--ink-soft); line-height:1.55; }
+
+/* ============ SLIDER ============ */
+input[type=range]{ width:100%; accent-color:var(--teal); }
+
+/* ============ MODAL / TOAST ============ */
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--bg);
+  padding:11px 18px; border-radius:10px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:all .3s ease; z-index:200; box-shadow:var(--shadow);
+}
+[data-theme="dark"] .toast{ background:var(--surface-alt); color:var(--ink); border:1px solid var(--border); }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ============ FOOTER LINKS/RESOURCES ============ */
+.res-item{ display:flex; align-items:center; gap:11px; padding:12px 13px; border-radius:10px; background:var(--bg); border:1px solid var(--border-soft); font-size:13px; font-weight:600;}
+.res-item .ic{ font-size:16px; }
+.res-item span.d{ font-weight:500; color:var(--ink-soft); font-size:12px; display:block; margin-top:1px;}
+
+/* ============ PRINT ============ */
+@media print{
+  .sidebar,.topbar,.subtabs,.btn,.iconbtn,.no-print{ display:none !important; }
+  .main{ width:100%; }
+  .content{ max-width:100%; padding:0; }
+  body{ background:#fff; color:#000; }
+  .card{ box-shadow:none; border:1px solid #ccc; break-inside:avoid; }
+  .view{ display:block !important; }
+  .view:not(#view-reports){ display:none !important; }
+}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:900px){
+  .sidebar{ position:fixed; left:0; transform:translateX(-100%); box-shadow:0 0 0 100vmax rgba(0,0,0,0); }
+  .sidebar.open{ transform:translateX(0); box-shadow:20px 0 60px rgba(0,0,0,.25); }
+  .hamburger{ display:flex; }
+  .bp-meta{ grid-template-columns:repeat(2,1fr); }
+}
+.scrim{ display:none; position:fixed; inset:0; background:rgba(10,15,20,.4); z-index:35; }
+.scrim.show{ display:block; }
+</style>
+</head>
+<body data-theme="dark">
+<div class="scrim" id="scrim" onclick="closeSidebar()"></div>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">🎫</div>
+      <div class="brand-text">Command Center<small>Student Finance</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="score-chip">
+        <div class="num mono" id="chipScore">--</div>
+        <div class="lbl">Financial Health Score<br><span id="chipTier" style="color:var(--teal); font-weight:700;">Loading</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="iconbtn hamburger" onclick="openSidebar()">☰</button>
+        <div>
+          <div class="topbar-title" id="topbarTitle">Overview</div>
+          <div class="topbar-sub" id="topbarSub">FLIGHT PLAN — CURRENT SAVINGS → TRIP GOAL</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="iconbtn" onclick="printReport()" title="Print report">🖨</button>
+        <button class="iconbtn" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">☀️</button>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+
+      <!-- ============ OVERVIEW ============ -->
+      <section class="view active" id="view-overview">
+        <div class="boardingpass" id="boardingpass"></div>
+
+        <div class="section-head"><h2>This month at a glance</h2><div class="desc">Updated live from your entries</div></div>
+        <div class="grid grid-4" id="overviewStats"></div>
+
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-title">Income vs. Spending <span class="hint">last 6 weeks</span></div>
+            <div id="chartIncomeExpense" class="chart-wrap"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Where money goes <span class="hint">this month</span></div>
+            <div id="chartCategoryDonut" class="chart-wrap"></div>
+          </div>
+        </div>
+
+        <div class="section-head"><h2>Top insights</h2><div class="desc">Generated from your data</div></div>
+        <div id="overviewInsights"></div>
+      </section>
+
+      <!-- ============ INCOME ============ -->
+      <section class="view" id="view-income">
+        <div class="section-head"><h2>Income</h2><div class="desc">Track every dollar coming in — jobs, gigs, allowance, aid</div></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Add income source</div>
+            <div class="field"><label>Source name</label><input class="input" id="incSource" placeholder="e.g. Campus Café — Part-time"></div>
+            <div class="row-2">
+              <div class="field"><label>Amount</label><input class="input" id="incAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+              <div class="field"><label>Frequency</label>
+                <select class="input" id="incFreq">
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Bi-weekly</option>
+                  <option value="monthly" selected>Monthly</option>
+                  <option value="onetime">One-time</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addIncome()">+ Add income</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Monthly income breakdown</div>
+            <div id="chartIncomeDonut" class="chart-wrap"></div>
+          </div>
+        </div>
+        <div class="section-head"><h2>Your sources</h2></div>
+        <div class="card"><div class="list" id="incomeList"></div></div>
+      </section>
+
+      <!-- ============ BUDGET & EXPENSES ============ -->
+      <section class="view" id="view-budget">
+        <div class="section-head"><h2>Budget &amp; expenses</h2><div class="desc">Set limits per category and log spending as it happens</div></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Log an expense</div>
+            <div class="field"><label>Category</label>
+              <select class="input" id="expCat"></select>
+            </div>
+            <div class="row-2">
+              <div class="field"><label>Description</label><input class="input" id="expDesc" placeholder="e.g. Groceries"></div>
+              <div class="field"><label>Amount</label><input class="input" id="expAmount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addExpense()">+ Log expense</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Set monthly budgets</div>
+            <div id="budgetSetters"></div>
+          </div>
+        </div>
+        <div class="section-head"><h2>Category progress</h2></div>
+        <div class="grid grid-2" id="budgetBars"></div>
+        <div class="section-head"><h2>Recent transactions</h2></div>
+        <div class="card"><div class="list" id="expenseList"></div></div>
+      </section>
+
+      <!-- ============ TRIP GOAL ============ -->
+      <section class="view" id="view-goal">
+        <div class="section-head"><h2>Savings goal — the trip</h2><div class="desc">Everything about getting you on that plane</div></div>
+        <div class="grid grid-3">
+          <div class="card stat-card"><div class="eyebrow">Saved so far</div><div class="val mono" id="goalSaved">$0</div><div class="progress" style="margin-top:10px;"><div id="goalProgressBar" style="width:0%"></div></div></div>
+          <div class="card stat-card"><div class="eyebrow">Goal amount</div><div class="val mono" id="goalTargetDisp">$0</div><div class="sub" id="goalRemainingDisp">—</div></div>
+          <div class="card stat-card"><div class="eyebrow">Target date</div><div class="val mono" id="goalDateDisp">—</div><div class="sub" id="goalDaysDisp">—</div></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-title">Goal settings</div>
+            <div class="field"><label>Trip name</label><input class="input" id="goalName"></div>
+            <div class="row-2">
+              <div class="field"><label>Target amount</label><input class="input" id="goalTarget" type="number" min="0"></div>
+              <div class="field"><label>Target date</label><input class="input" id="goalDate" type="date"></div>
+            </div>
+            <button class="btn btn-primary" onclick="saveGoalSettings()">Save goal</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Add a contribution</div>
+            <div class="field"><label>Amount saved today</label><input class="input" id="goalContribAmount" type="number" min="0" placeholder="0.00"></div>
+            <button class="btn btn-primary btn-block" onclick="addContribution()">+ Add to trip fund</button>
+            <div style="margin-top:14px;">
+              <div class="card-title" style="margin-bottom:8px;">Contribution history</div>
+              <div class="list" id="goalHistory" style="max-height:160px; overflow:auto;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head"><h2>What-if: weekly savings simulator</h2><div class="desc">Drag to see how saving more (or less) changes your arrival date</div></div>
+        <div class="card">
+          <div class="field">
+            <label>Weekly contribution: <span class="mono" id="whatifWeeklyLabel" style="color:var(--teal); font-weight:700;">$0</span></label>
+            <input type="range" id="whatifWeekly" min="0" max="200" step="5" oninput="updateGoalWhatIf()">
+          </div>
+          <div class="grid grid-3">
+            <div class="stat-card card"><div class="eyebrow">Weeks to goal</div><div class="val mono" id="whatifWeeks">—</div></div>
+            <div class="stat-card card"><div class="eyebrow">Estimated arrival</div><div class="val mono" id="whatifDate">—</div></div>
+            <div class="stat-card card"><div class="eyebrow">vs. target date</div><div class="val mono" id="whatifVsTarget">—</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ STUDENT LOAN ============ -->
+      <section class="view" id="view-loan">
+        <div class="section-head"><h2>Student loan</h2><div class="desc">Know exactly when you'll be debt-free</div></div>
+        <div class="grid grid-3">
+          <div class="card stat-card"><div class="eyebrow">Current balance</div><div class="val mono" id="loanBalanceDisp">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Interest rate (APR)</div><div class="val mono" id="loanRateDisp">0%</div></div>
+          <div class="card stat-card"><div class="eyebrow">Minimum payment</div><div class="val mono" id="loanMinDisp">$0</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-title">Loan details</div>
+            <div class="row-2">
+              <div class="field"><label>Balance</label><input class="input" id="loanBalance" type="number" min="0"></div>
+              <div class="field"><label>APR %</label><input class="input" id="loanRate" type="number" min="0" step="0.1"></div>
+            </div>
+            <div class="field"><label>Minimum monthly payment</label><input class="input" id="loanMin" type="number" min="0"></div>
+            <button class="btn btn-primary" onclick="saveLoanSettings()">Save loan details</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Payoff timeline</div>
+            <div id="chartLoanPayoff" class="chart-wrap"></div>
+          </div>
+        </div>
+        <div class="section-head"><h2>What-if: extra payments</h2><div class="desc">See how much interest you'd save by paying a little more each month</div></div>
+        <div class="card">
+          <div class="field">
+            <label>Extra monthly payment: <span class="mono" id="loanExtraLabel" style="color:var(--teal); font-weight:700;">$0</span></label>
+            <input type="range" id="loanExtra" min="0" max="150" step="5" oninput="updateLoanWhatIf()">
+          </div>
+          <div class="grid grid-3">
+            <div class="stat-card card"><div class="eyebrow">Payoff time</div><div class="val mono" id="loanPayoffTime">—</div></div>
+            <div class="stat-card card"><div class="eyebrow">Total interest paid</div><div class="val mono" id="loanTotalInterest">—</div></div>
+            <div class="stat-card card"><div class="eyebrow">Interest saved</div><div class="val mono" id="loanInterestSaved">—</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ INVESTMENTS ============ -->
+      <section class="view" id="view-invest">
+        <div class="section-head"><h2>Investments</h2><div class="desc">A simple, beginner-friendly view of what you hold</div></div>
+        <div class="grid grid-3">
+          <div class="card stat-card"><div class="eyebrow">Total invested</div><div class="val mono" id="invInvested">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Current value</div><div class="val mono" id="invCurrent">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Gain / loss</div><div class="val mono" id="invGain">$0</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-title">Add a holding</div>
+            <div class="field"><label>Name</label><input class="input" id="invName" placeholder="e.g. Index Fund, BTC, Savings Certificate"></div>
+            <div class="row-2">
+              <div class="field"><label>Amount invested</label><input class="input" id="invInvestedAmt" type="number" min="0"></div>
+              <div class="field"><label>Current value</label><input class="input" id="invCurrentAmt" type="number" min="0"></div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addInvestment()">+ Add holding</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Portfolio allocation</div>
+            <div id="chartInvestDonut" class="chart-wrap"></div>
+          </div>
+        </div>
+        <div class="section-head"><h2>Holdings</h2></div>
+        <div class="card"><div class="list" id="investList"></div></div>
+
+        <div class="section-head"><h2>Beginner compound-interest calculator</h2><div class="desc">Curious what small, regular investing could grow into?</div></div>
+        <div class="card">
+          <div class="row-3">
+            <div class="field"><label>Starting amount</label><input class="input" id="ciStart" type="number" value="100"></div>
+            <div class="field"><label>Monthly addition</label><input class="input" id="ciMonthly" type="number" value="25"></div>
+            <div class="field"><label>Years</label><input class="input" id="ciYears" type="number" value="5"></div>
+          </div>
+          <div class="field"><label>Assumed annual return: <span class="mono" id="ciRateLabel" style="color:var(--teal);font-weight:700;">6%</span></label>
+            <input type="range" id="ciRate" min="1" max="12" value="6" oninput="updateCompound()"></div>
+          <button class="btn btn-primary" onclick="updateCompound()">Calculate</button>
+          <div class="grid grid-2" style="margin-top:12px;">
+            <div class="stat-card card"><div class="eyebrow">Total contributed</div><div class="val mono" id="ciContributed">—</div></div>
+            <div class="stat-card card"><div class="eyebrow">Estimated future value</div><div class="val mono" id="ciFuture">—</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CASH FLOW ============ -->
+      <section class="view" id="view-cashflow">
+        <div class="section-head"><h2>Cash flow</h2><div class="desc">The full picture: what comes in, what goes out, what's left</div></div>
+        <div class="grid grid-4">
+          <div class="card stat-card"><div class="eyebrow">Monthly income</div><div class="val mono" id="cfIncome">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Monthly expenses</div><div class="val mono" id="cfExpenses">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Net cash flow</div><div class="val mono" id="cfNet">$0</div></div>
+          <div class="card stat-card"><div class="eyebrow">Savings rate</div><div class="val mono" id="cfRate">0%</div></div>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <div class="card-title">Cash flow breakdown</div>
+          <div id="chartCashflowBar" class="chart-wrap"></div>
+        </div>
+      </section>
+
+      <!-- ============ CALCULATORS ============ -->
+      <section class="view" id="view-calc">
+        <div class="section-head"><h2>Calculators</h2><div class="desc">Quick math for real decisions</div></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Savings goal calculator</div>
+            <div class="row-2">
+              <div class="field"><label>Goal amount</label><input class="input" id="sgAmount" type="number" value="500"></div>
+              <div class="field"><label>Months to save</label><input class="input" id="sgMonths" type="number" value="6"></div>
+            </div>
+            <button class="btn btn-primary" onclick="calcSavingsGoal()">Calculate</button>
+            <div class="stat-card card" style="margin-top:12px;"><div class="eyebrow">You need to save</div><div class="val mono" id="sgResult">—</div><div class="sub">per month</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">50/30/20 budget split</div>
+            <div class="field"><label>Monthly income</label><input class="input" id="bsIncome" type="number" value="900"></div>
+            <button class="btn btn-primary" onclick="calcBudgetSplit()">Calculate</button>
+            <div class="grid grid-3" style="margin-top:12px;">
+              <div class="stat-card card"><div class="eyebrow">Needs (50%)</div><div class="val mono" id="bsNeeds">—</div></div>
+              <div class="stat-card card"><div class="eyebrow">Wants (30%)</div><div class="val mono" id="bsWants">—</div></div>
+              <div class="stat-card card"><div class="eyebrow">Savings (20%)</div><div class="val mono" id="bsSavings">—</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ INSIGHTS ============ -->
+      <section class="view" id="view-insights">
+        <div class="section-head"><h2>AI insights</h2><div class="desc">Personalized observations based on your entries</div></div>
+        <div id="fullInsights"></div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="view" id="view-reports">
+        <div class="section-head"><h2>Reports</h2><div class="desc">A printable snapshot of your finances — click the print icon above</div></div>
+        <div class="card" id="reportCard"></div>
+      </section>
+
+      <!-- ============ LEARN ============ -->
+      <section class="view" id="view-learn">
+        <div class="section-head"><h2>Financial tips</h2><div class="desc">Bite-sized guidance for student money management</div></div>
+        <div class="grid grid-3" id="tipsGrid"></div>
+
+        <div class="section-head"><h2>Money checklist</h2><div class="desc">Small habits, tracked over time</div></div>
+        <div class="card"><div id="checklistWrap"></div></div>
+
+        <div class="section-head"><h2>Resources</h2><div class="desc">Places to learn more, at your own pace</div></div>
+        <div class="grid grid-2" id="resourcesGrid"></div>
+
+        <div class="section-head"><h2>Ask Claude</h2><div class="desc">Prompts to paste into a chat when you want to go deeper</div></div>
+        <div class="card"><div class="list" id="promptsList"></div></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =================================================================
+   STATE
+================================================================= */
+const CATS = ["Food","Transportation","Textbooks & Supplies","Housing/Rent","Subscriptions","Entertainment","Personal Care","Other"];
+const CAT_ICON = {"Food":"🍔","Transportation":"🚌","Textbooks & Supplies":"📚","Housing/Rent":"🏠","Subscriptions":"📺","Entertainment":"🎮","Personal Care":"🧴","Other":"🧾"};
+const CAT_COLOR = ["#1F8A70","#C9820A","#3E7CB1","#8E5CC9","#C93A2E","#2E9E9E","#B15FA0","#7A8B99"];
+
+const todayISO = () => new Date().toISOString().slice(0,10);
+const uid = () => Math.random().toString(36).slice(2,10);
+const fmt$ = n => "$" + (Math.round((n||0)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt$0 = n => "$" + Math.round(n||0).toLocaleString();
+
+function defaultState(){
+  const d = new Date();
+  const trip = new Date(d.getFullYear(), d.getMonth()+5, 15);
+  return {
+    theme:"dark",
+    profile:{ name:"Alex", type:"Student" },
+    income:[
+      {id:uid(), source:"Campus Café — Part-time", amount:620, freq:"monthly", date: todayISO()},
+      {id:uid(), source:"Weekend tutoring gigs", amount:80, freq:"monthly", date: todayISO()}
+    ],
+    expenses:[
+      {id:uid(), cat:"Food", desc:"Groceries", amount:140, date: todayISO()},
+      {id:uid(), cat:"Transportation", desc:"Bus pass", amount:45, date: todayISO()},
+      {id:uid(), cat:"Textbooks & Supplies", desc:"Course pack", amount:60, date: todayISO()},
+      {id:uid(), cat:"Subscriptions", desc:"Streaming + music", amount:18, date: todayISO()},
+      {id:uid(), cat:"Entertainment", desc:"Movies with friends", amount:32, date: todayISO()},
+      {id:uid(), cat:"Housing/Rent", desc:"Dorm/room contribution", amount:200, date: todayISO()}
+    ],
+    budgets:{ "Food":180,"Transportation":50,"Textbooks & Supplies":70,"Housing/Rent":200,"Subscriptions":25,"Entertainment":40,"Personal Care":25,"Other":30 },
+    goal:{ name:"Backpacking trip", target:1500, current:340, date: trip.toISOString().slice(0,10), weekly:40 },
+    goalHistory:[ {id:uid(), amount:120, date: todayISO()}, {id:uid(), amount:220, date: todayISO()} ],
+    loan:{ balance:8200, rate:5.5, min:90, extra:0 },
+    investments:[ {id:uid(), name:"Index Fund (starter)", invested:150, current:162} ],
+    checklist:{ "Built a starter emergency fund":false, "Tracked spending for 30 days":true, "Set up automatic savings transfer":false, "Reviewed subscriptions for unused ones":false, "Learned how student loan interest accrues":true, "Opened a separate savings account for goals":false },
+  };
+}
+
+let state = load();
+function load(){
+  try{
+    const raw = localStorage.getItem("pfcc_state_v1");
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  }catch(e){ return defaultState(); }
+}
+function save(){ localStorage.setItem("pfcc_state_v1", JSON.stringify(state)); }
+
+/* =================================================================
+   NAV
+================================================================= */
+const NAV = [
+  {sec:"Dashboard", items:[["overview","📌","Overview"]]},
+  {sec:"Money in/out", items:[["income","💵","Income"],["budget","🧾","Budget & Expenses"],["cashflow","🔁","Cash Flow"]]},
+  {sec:"Goals & debt", items:[["goal","✈️","Trip Goal"],["loan","🎓","Student Loan"],["invest","📈","Investments"]]},
+  {sec:"Tools", items:[["calc","🧮","Calculators"],["insights","💡","Insights"],["reports","🖨","Reports"],["learn","📘","Learn"]]},
+];
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = NAV.map(group => `
+    <div class="nav-section-label">${group.sec}</div>
+    ${group.items.map(([id,ic,label]) => `<div class="nav-item" data-view="${id}" onclick="goTo('${id}')"><span class="ic">${ic}</span><span>${label}</span></div>`).join("")}
+  `).join("");
+}
+function goTo(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+id).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active", n.dataset.view===id));
+  const titles = {overview:["Overview","THE BIG PICTURE"], income:["Income","MONEY COMING IN"], budget:["Budget & Expenses","WHERE IT GOES"], cashflow:["Cash Flow","IN VS OUT"], goal:["Trip Goal","FLIGHT PLAN — SAVINGS → TRIP"], loan:["Student Loan","PATH TO DEBT-FREE"], invest:["Investments","GROWING WHAT'S LEFT"], calc:["Calculators","QUICK MATH"], insights:["AI Insights","PATTERNS IN YOUR DATA"], reports:["Reports","PRINTABLE SNAPSHOT"], learn:["Learn","LEVEL UP YOUR MONEY SKILLS"]};
+  document.getElementById("topbarTitle").textContent = titles[id][0];
+  document.getElementById("topbarSub").textContent = titles[id][1];
+  closeSidebar();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function openSidebar(){ document.getElementById("sidebar").classList.add("open"); document.getElementById("scrim").classList.add("show"); }
+function closeSidebar(){ document.getElementById("sidebar").classList.remove("open"); document.getElementById("scrim").classList.remove("show"); }
+
+/* =================================================================
+   THEME
+================================================================= */
+function toggleTheme(){
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  applyTheme(); save();
+}
+function applyTheme(){
+  document.body.setAttribute("data-theme", state.theme);
+  document.getElementById("themeBtn").textContent = state.theme === "dark" ? "☀️" : "🌙";
+}
+
+/* =================================================================
+   TOAST
+================================================================= */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+/* =================================================================
+   DERIVED FINANCE HELPERS
+================================================================= */
+function monthlyIncomeTotal(){
+  return state.income.reduce((s,i)=>{
+    const mult = i.freq==="weekly"?4.33 : i.freq==="biweekly"?2.17 : i.freq==="monthly"?1 : 0;
+    return s + i.amount*mult;
+  },0);
+}
+function monthlyExpenseTotal(){ return state.expenses.reduce((s,e)=>s+e.amount,0); }
+function expensesByCat(){
+  const map = {}; CATS.forEach(c=>map[c]=0);
+  state.expenses.forEach(e=> map[e.cat] = (map[e.cat]||0) + e.amount);
+  return map;
+}
+function netCashflow(){ return monthlyIncomeTotal() - monthlyExpenseTotal(); }
+function savingsRate(){
+  const inc = monthlyIncomeTotal();
+  if(inc<=0) return 0;
+  return Math.max(-100, Math.min(100, (netCashflow()/inc)*100));
+}
+function investTotals(){
+  const invested = state.investments.reduce((s,i)=>s+i.invested,0);
+  const current = state.investments.reduce((s,i)=>s+i.current,0);
+  return {invested, current, gain: current-invested};
+}
+function healthScore(){
+  const inc = monthlyIncomeTotal();
+  const sRate = savingsRate(); // -100..100
+  const sScore = Math.max(0, Math.min(100, (sRate+20)*2)); // 0 sRate -> 40, 30%+ -> 100
+  const debtRatio = inc>0 ? state.loan.balance/(inc*12) : 1; // balance vs annual income
+  const dScore = Math.max(0, 100 - debtRatio*30);
+  const byCat = expensesByCat();
+  let onBudget=0, total=0;
+  CATS.forEach(c=>{ if(state.budgets[c]>0){ total++; if(byCat[c] <= state.budgets[c]) onBudget++; } });
+  const bScore = total>0 ? (onBudget/total)*100 : 70;
+  const goalProgress = state.goal.target>0 ? Math.min(100,(state.goal.current/state.goal.target)*100) : 0;
+  const gScore = goalProgress;
+  const score = Math.round(sScore*0.35 + dScore*0.25 + bScore*0.25 + gScore*0.15);
+  return Math.max(0, Math.min(100, score));
+}
+function tierFor(score){
+  if(score>=88) return {name:"First Class", seat:"1A"};
+  if(score>=74) return {name:"Business", seat:"4C"};
+  if(score>=58) return {name:"Premium Economy", seat:"12D"};
+  if(score>=38) return {name:"Economy", seat:"27F"};
+  return {name:"Standby", seat:"—"};
+}
+
+/* =================================================================
+   SVG CHART HELPERS  (no external libs)
+================================================================= */
+function svgEl(w,h,extra=""){ return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block;" ${extra}>`; }
+
+function donutChart(data, opts={}){
+  // data: [{label, value, color}]
+  const total = data.reduce((s,d)=>s+d.value,0);
+  const size = 200, cx=size/2, cy=size/2, r=78, stroke=26;
+  let angle = -90;
+  let paths = "";
+  if(total<=0){
+    paths = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${stroke}"/>`;
+  } else {
+    data.forEach(d=>{
+      if(d.value<=0) return;
+      const frac = d.value/total;
+      const sweep = frac*360;
+      const large = sweep>180?1:0;
+      const a0 = angle*Math.PI/180, a1 = (angle+sweep)*Math.PI/180;
+      const x0 = cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0);
+      const x1 = cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
+      paths += `<path d="M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" fill="none" stroke="${d.color}" stroke-width="${stroke}" stroke-linecap="butt"/>`;
+      angle += sweep;
+    });
+  }
+  const centerLabel = opts.centerLabel || fmt$0(total);
+  const centerSub = opts.centerSub || "total";
+  let html = svgEl(size,size) + paths +
+    `<text x="${cx}" y="${cy-4}" text-anchor="middle" font-family="var(--font-mono)" font-size="20" font-weight="800" fill="var(--ink)">${centerLabel}</text>
+     <text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--ink-faint)" letter-spacing="1">${centerSub}</text>
+    </svg>`;
+  const legend = `<div class="legend">${data.filter(d=>d.value>0).map(d=>`<div class="legend-item"><span class="legend-dot" style="background:${d.color}"></span>${d.label} · ${fmt$0(d.value)}</div>`).join("")}</div>`;
+  return `<div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center;"><div style="width:200px; flex-shrink:0;">${html}</div><div style="flex:1; min-width:150px;">${legend}</div></div>`;
+}
+
+function barChart(labels, series, opts={}){
+  // series: [{name, color, values:[...]}] aligned with labels
+  const w = 560, h = 220, padL=36, padB=26, padT=14, padR=10;
+  const plotW = w-padL-padR, plotH = h-padT-padB;
+  let max = 0;
+  series.forEach(s=> s.values.forEach(v=> max = Math.max(max, v)));
+  max = max<=0?10:max*1.15;
+  const groupW = plotW/labels.length;
+  const barW = Math.min(18, (groupW/series.length)*0.6);
+  let bars = "";
+  labels.forEach((lab,i)=>{
+    const gx = padL + i*groupW + groupW/2;
+    series.forEach((s,si)=>{
+      const v = s.values[i]||0;
+      const bh = (v/max)*plotH;
+      const bx = gx - (series.length*barW)/2 + si*barW;
+      const by = padT+plotH-bh;
+      bars += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW-3}" height="${bh.toFixed(1)}" rx="3" fill="${s.color}"/>`;
+    });
+    bars += `<text x="${gx}" y="${h-8}" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" fill="var(--ink-faint)">${lab}</text>`;
+  });
+  // gridlines
+  let grid = "";
+  for(let g=0; g<=3; g++){
+    const gy = padT + plotH - (g/3)*plotH;
+    grid += `<line x1="${padL}" y1="${gy}" x2="${w-padR}" y2="${gy}" stroke="var(--border-soft)" stroke-width="1"/>`;
+    grid += `<text x="4" y="${gy+3}" font-family="var(--font-mono)" font-size="9" fill="var(--ink-faint)">${fmt$0((g/3)*max)}</text>`;
+  }
+  const legend = `<div class="legend">${series.map(s=>`<div class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.name}</div>`).join("")}</div>`;
+  return svgEl(w,h) + grid + bars + `</svg>` + legend;
+}
+
+function lineChart(labels, values, opts={}){
+  const w=560,h=200,padL=40,padB=24,padT=14,padR=14;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const max = Math.max(...values, 1)*1.1;
+  const min = Math.min(...values, 0);
+  const range = (max-min)||1;
+  const stepX = plotW/(labels.length-1||1);
+  const pts = values.map((v,i)=>{
+    const x = padL + i*stepX;
+    const y = padT + plotH - ((v-min)/range)*plotH;
+    return [x,y];
+  });
+  const path = pts.map((p,i)=> (i===0?"M":"L")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const area = path + ` L ${pts[pts.length-1][0].toFixed(1)} ${padT+plotH} L ${pts[0][0].toFixed(1)} ${padT+plotH} Z`;
+  let grid="";
+  for(let g=0; g<=3; g++){
+    const gy = padT + plotH - (g/3)*plotH;
+    grid += `<line x1="${padL}" y1="${gy}" x2="${w-padR}" y2="${gy}" stroke="var(--border-soft)" stroke-width="1"/>`;
+    grid += `<text x="2" y="${gy+3}" font-family="var(--font-mono)" font-size="9" fill="var(--ink-faint)">${fmt$0(min+(g/3)*range)}</text>`;
+  }
+  const dots = pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="var(--teal)"/>`).join("");
+  const labelsSvg = labels.map((l,i)=>`<text x="${pts[i][0].toFixed(1)}" y="${h-6}" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--ink-faint)">${l}</text>`).join("");
+  return svgEl(w,h) + grid + `<path d="${area}" fill="var(--teal-soft)" stroke="none"/><path d="${path}" fill="none" stroke="var(--teal)" stroke-width="2.5"/>` + dots + labelsSvg + `</svg>`;
+}
+
+/* =================================================================
+   RENDER: BOARDING PASS HERO
+================================================================= */
+function renderBoardingPass(){
+  const score = healthScore();
+  const tier = tierFor(score);
+  const g = state.goal;
+  const pct = g.target>0 ? Math.min(100, Math.round((g.current/g.target)*100)) : 0;
+  const days = Math.max(0, Math.ceil((new Date(g.date) - new Date())/(1000*60*60*24)));
+  document.getElementById("boardingpass").innerHTML = `
+    <div class="bp-main">
+      <div class="bp-top">
+        <div class="bp-brand">Command Air · Boarding Pass</div>
+        <div class="bp-class">${tier.name.toUpperCase()}</div>
+      </div>
+      <div class="bp-route">
+        <div class="bp-point"><div class="code mono">${fmt$0(g.current)}</div><div class="lbl">Saved now</div></div>
+        <div class="bp-path"><div class="bp-path-fill" style="width:${pct}%;"></div><div class="bp-plane" style="left:${pct}%;">✈️</div></div>
+        <div class="bp-point" style="text-align:right;"><div class="code mono">${fmt$0(g.target)}</div><div class="lbl">${g.name||"Goal"}</div></div>
+      </div>
+      <div class="bp-meta">
+        <div><div class="eyebrow">Progress</div><div class="v">${pct}%</div></div>
+        <div><div class="eyebrow">Departs</div><div class="v">${g.date}</div></div>
+        <div><div class="eyebrow">Days left</div><div class="v">${days}</div></div>
+        <div><div class="eyebrow">Passenger</div><div class="v">${state.profile.name}</div></div>
+      </div>
+    </div>
+    <div class="bp-perf">
+      <div class="bp-score"><div class="n mono">${score}</div><div class="l">Financial Health Score</div></div>
+      <div>
+        <div class="bp-barcode"></div>
+        <div class="bp-seat">SEAT ${tier.seat} · GATE ${String.fromCharCode(65+(score%5))}${Math.max(1,score%12)}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById("chipScore").textContent = score;
+  document.getElementById("chipTier").textContent = tier.name;
+}
+
+/* =================================================================
+   RENDER: OVERVIEW
+================================================================= */
+function renderOverview(){
+  const inc = monthlyIncomeTotal(), exp = monthlyExpenseTotal(), net = inc-exp, sRate = savingsRate();
+  const inv = investTotals();
+  document.getElementById("overviewStats").innerHTML = `
+    <div class="card stat-card"><div class="eyebrow">Monthly income</div><div class="val mono">${fmt$0(inc)}</div><div class="sub"><span class="pill up">+ income</span></div></div>
+    <div class="card stat-card"><div class="eyebrow">Monthly expenses</div><div class="val mono">${fmt$0(exp)}</div><div class="sub"><span class="pill ${exp>inc?'down':'warn'}">${Math.round((exp/(inc||1))*100)}% of income</span></div></div>
+    <div class="card stat-card"><div class="eyebrow">Net cash flow</div><div class="val mono" style="color:${net>=0?'var(--teal)':'var(--red)'}">${net>=0?'+':''}${fmt$0(net)}</div><div class="sub"><span class="pill ${net>=0?'up':'down'}">${net>=0?'saving':'over budget'}</span></div></div>
+    <div class="card stat-card"><div class="eyebrow">Trip fund</div><div class="val mono">${fmt$0(state.goal.current)}</div><div class="sub">${Math.round((state.goal.current/(state.goal.target||1))*100)}% to ${fmt$0(state.goal.target)}</div></div>
+  `;
+
+  // income vs expense over synthetic 6 weeks (using current totals with slight variance for visual context)
+  const weeks = ["W1","W2","W3","W4","W5","W6"];
+  const weeklyInc = inc/4.33, weeklyExp = exp/4.33;
+  const incSeries = weeks.map((_,i)=> Math.round(weeklyInc*(0.9+0.04*i)));
+  const expSeries = weeks.map((_,i)=> Math.round(weeklyExp*(0.85+0.06*i)));
+  document.getElementById("chartIncomeExpense").innerHTML = barChart(weeks, [
+    {name:"Income", color:"var(--teal)", values:incSeries},
+    {name:"Spending", color:"var(--amber)", values:expSeries}
+  ]);
+
+  const byCat = expensesByCat();
+  const donutData = CATS.map((c,i)=>({label:c, value:byCat[c]||0, color:CAT_COLOR[i%CAT_COLOR.length]}));
+  document.getElementById("chartCategoryDonut").innerHTML = donutChart(donutData, {centerSub:"spent"});
+
+  renderInsights("overviewInsights", 3);
+}
+
+/* =================================================================
+   INCOME MODULE
+================================================================= */
+function monthlyAmount(i){
+  const mult = i.freq==="weekly"?4.33 : i.freq==="biweekly"?2.17 : i.freq==="monthly"?1 : 0;
+  return i.amount*mult;
+}
+function renderIncome(){
+  const list = document.getElementById("incomeList");
+  if(state.income.length===0){ list.innerHTML = `<div class="empty-state">No income sources yet. Add your part-time job or gig above.</div>`; }
+  else {
+    list.innerHTML = state.income.map(i=>`
+      <div class="list-row">
+        <div class="lr-main"><div class="lr-icon">💵</div><div><div class="lr-title">${i.source}</div><div class="lr-sub">${i.freq} · ≈ ${fmt$0(monthlyAmount(i))}/mo</div></div></div>
+        <div class="lr-amt">${fmt$(i.amount)}</div>
+        <button class="lr-del" onclick="delIncome('${i.id}')">✕</button>
+      </div>`).join("");
+  }
+  const colors = ["#1F8A70","#C9820A","#3E7CB1","#8E5CC9","#2E9E9E"];
+  const data = state.income.map((i,idx)=>({label:i.source, value:monthlyAmount(i), color:colors[idx%colors.length]}));
+  document.getElementById("chartIncomeDonut").innerHTML = donutChart(data, {centerSub:"per month"});
+}
+function addIncome(){
+  const source = document.getElementById("incSource").value.trim();
+  const amount = parseFloat(document.getElementById("incAmount").value);
+  const freq = document.getElementById("incFreq").value;
+  if(!source || !amount || amount<=0){ toast("Add a source name and amount"); return; }
+  state.income.push({id:uid(), source, amount, freq, date:todayISO()});
+  save(); document.getElementById("incSource").value=""; document.getElementById("incAmount").value="";
+  renderAll(); toast("Income source added");
+}
+function delIncome(id){ state.income = state.income.filter(i=>i.id!==id); save(); renderAll(); }
+
+/* =================================================================
+   BUDGET & EXPENSES MODULE
+================================================================= */
+function renderBudget(){
+  const catSel = document.getElementById("expCat");
+  if(catSel.options.length===0){ catSel.innerHTML = CATS.map(c=>`<option value="${c}">${c}</option>`).join(""); }
+
+  document.getElementById("budgetSetters").innerHTML = CATS.map(c=>`
+    <div class="field" style="display:flex; align-items:center; gap:10px; margin-bottom:9px;">
+      <label style="flex:1; margin:0;">${CAT_ICON[c]} ${c}</label>
+      <input class="input" style="width:100px;" type="number" min="0" value="${state.budgets[c]||0}" onchange="setBudget('${c}', this.value)">
+    </div>`).join("");
+
+  const byCat = expensesByCat();
+  document.getElementById("budgetBars").innerHTML = CATS.map(c=>{
+    const spent = byCat[c]||0, budget = state.budgets[c]||0;
+    const pct = budget>0 ? Math.min(100,(spent/budget)*100) : 0;
+    const over = budget>0 && spent>budget;
+    const warn = budget>0 && spent>budget*0.8 && !over;
+    return `<div class="card">
+      <div class="card-title"><span>${CAT_ICON[c]} ${c}</span><span class="hint mono">${fmt$0(spent)} / ${fmt$0(budget)}</span></div>
+      <div class="progress ${over?'over':warn?'warn':''}"><div style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+
+  const list = document.getElementById("expenseList");
+  const sorted = [...state.expenses].reverse();
+  if(sorted.length===0){ list.innerHTML = `<div class="empty-state">No expenses logged yet.</div>`; }
+  else {
+    list.innerHTML = sorted.slice(0,25).map(e=>`
+      <div class="list-row">
+        <div class="lr-main"><div class="lr-icon">${CAT_ICON[e.cat]||"🧾"}</div><div><div class="lr-title">${e.desc||e.cat}</div><div class="lr-sub">${e.cat} · ${e.date}</div></div></div>
+        <div class="lr-amt">${fmt$(e.amount)}</div>
+        <button class="lr-del" onclick="delExpense('${e.id}')">✕</button>
+      </div>`).join("");
+  }
+}
+function setBudget(cat, val){ state.budgets[cat] = parseFloat(val)||0; save(); renderBudget(); renderBoardingPass(); }
+function addExpense(){
+  const cat = document.getElementById("expCat").value;
+  const desc = document.getElementById("expDesc").value.trim();
+  const amount = parseFloat(document.getElementById("expAmount").value);
+  if(!amount || amount<=0){ toast("Enter a valid amount"); return; }
+  state.expenses.push({id:uid(), cat, desc, amount, date: todayISO()});
+  save(); document.getElementById("expDesc").value=""; document.getElementById("expAmount").value="";
+  renderAll(); toast("Expense logged");
+}
+function delExpense(id){ state.expenses = state.expenses.filter(e=>e.id!==id); save(); renderAll(); }
+
+/* =================================================================
+   TRIP GOAL MODULE
+================================================================= */
+function renderGoal(){
+  const g = state.goal;
+  document.getElementById("goalSaved").textContent = fmt$0(g.current);
+  const pct = g.target>0 ? Math.min(100,(g.current/g.target)*100) : 0;
+  document.getElementById("goalProgressBar").style.width = pct+"%";
+  document.getElementById("goalTargetDisp").textContent = fmt$0(g.target);
+  document.getElementById("goalRemainingDisp").textContent = fmt$0(Math.max(0,g.target-g.current)) + " remaining";
+  document.getElementById("goalDateDisp").textContent = g.date;
+  const days = Math.ceil((new Date(g.date)-new Date())/(1000*60*60*24));
+  document.getElementById("goalDaysDisp").textContent = days>=0 ? days+" days away" : "date passed";
+  document.getElementById("goalName").value = g.name;
+  document.getElementById("goalTarget").value = g.target;
+  document.getElementById("goalDate").value = g.date;
+
+  const hist = document.getElementById("goalHistory");
+  const sorted = [...state.goalHistory].reverse();
+  hist.innerHTML = sorted.length? sorted.map(h=>`
+    <div class="list-row"><div class="lr-main"><div class="lr-icon">✈️</div><div><div class="lr-title">Contribution</div><div class="lr-sub">${h.date}</div></div></div><div class="lr-amt">${fmt$(h.amount)}</div><button class="lr-del" onclick="delContribution('${h.id}')">✕</button></div>
+  `).join("") : `<div class="empty-state">No contributions logged yet.</div>`;
+
+  document.getElementById("whatifWeekly").value = g.weekly || 40;
+  updateGoalWhatIf();
+}
+function saveGoalSettings(){
+  state.goal.name = document.getElementById("goalName").value.trim() || "Trip";
+  state.goal.target = parseFloat(document.getElementById("goalTarget").value) || 0;
+  state.goal.date = document.getElementById("goalDate").value || state.goal.date;
+  save(); renderAll(); toast("Goal updated");
+}
+function addContribution(){
+  const amount = parseFloat(document.getElementById("goalContribAmount").value);
+  if(!amount || amount<=0){ toast("Enter a valid amount"); return; }
+  state.goal.current += amount;
+  state.goalHistory.push({id:uid(), amount, date:todayISO()});
+  save(); document.getElementById("goalContribAmount").value="";
+  renderAll(); toast("Added to your trip fund ✈️");
+}
+function delContribution(id){
+  const h = state.goalHistory.find(x=>x.id===id);
+  if(h){ state.goal.current = Math.max(0, state.goal.current - h.amount); }
+  state.goalHistory = state.goalHistory.filter(x=>x.id!==id);
+  save(); renderAll();
+}
+function updateGoalWhatIf(){
+  const weekly = parseFloat(document.getElementById("whatifWeekly").value)||0;
+  state.goal.weekly = weekly; save();
+  document.getElementById("whatifWeeklyLabel").textContent = fmt$0(weekly);
+  const remaining = Math.max(0, state.goal.target - state.goal.current);
+  const weeks = weekly>0 ? Math.ceil(remaining/weekly) : Infinity;
+  document.getElementById("whatifWeeks").textContent = isFinite(weeks) ? weeks : "∞";
+  if(isFinite(weeks)){
+    const arrival = new Date(); arrival.setDate(arrival.getDate() + weeks*7);
+    document.getElementById("whatifDate").textContent = arrival.toISOString().slice(0,10);
+    const target = new Date(state.goal.date);
+    const diffDays = Math.round((target-arrival)/(1000*60*60*24));
+    const el = document.getElementById("whatifVsTarget");
+    if(diffDays>=0){ el.textContent = diffDays+" days early"; el.style.color="var(--teal)"; }
+    else { el.textContent = Math.abs(diffDays)+" days late"; el.style.color="var(--red)"; }
+  } else {
+    document.getElementById("whatifDate").textContent = "—";
+    document.getElementById("whatifVsTarget").textContent = "—";
+  }
+}
+
+/* =================================================================
+   STUDENT LOAN MODULE
+================================================================= */
+function renderLoan(){
+  const l = state.loan;
+  document.getElementById("loanBalanceDisp").textContent = fmt$0(l.balance);
+  document.getElementById("loanRateDisp").textContent = l.rate+"%";
+  document.getElementById("loanMinDisp").textContent = fmt$0(l.min);
+  document.getElementById("loanBalance").value = l.balance;
+  document.getElementById("loanRate").value = l.rate;
+  document.getElementById("loanMin").value = l.min;
+  document.getElementById("loanExtra").value = l.extra||0;
+
+  const {months, series} = amortize(l.balance, l.rate, l.min, 0);
+  document.getElementById("chartLoanPayoff").innerHTML = lineChart(
+    series.filter((_,i)=> i%Math.ceil(series.length/8||1)===0 || i===series.length-1).map((_,i)=>""+ (i)),
+    sampleSeries(series, 8)
+  );
+  updateLoanWhatIf();
+}
+function amortize(balance, aprPct, payment, extra){
+  const r = (aprPct/100)/12;
+  let bal = balance, months = 0, totalInterest = 0;
+  const series = [bal];
+  const pay = payment+extra;
+  if(pay<=bal*r){ return {months: Infinity, totalInterest: Infinity, series:[bal,bal]}; }
+  while(bal>0 && months<1200){
+    const interest = bal*r;
+    totalInterest += interest;
+    bal = bal + interest - pay;
+    if(bal<0) bal=0;
+    months++;
+    series.push(bal);
+  }
+  return {months, totalInterest, series};
+}
+function sampleSeries(series, n){
+  const step = Math.max(1, Math.floor(series.length/n));
+  const out = [];
+  for(let i=0;i<series.length;i+=step) out.push(Math.round(series[i]));
+  if(out[out.length-1] !== Math.round(series[series.length-1])) out.push(Math.round(series[series.length-1]));
+  return out;
+}
+function saveLoanSettings(){
+  state.loan.balance = parseFloat(document.getElementById("loanBalance").value)||0;
+  state.loan.rate = parseFloat(document.getElementById("loanRate").value)||0;
+  state.loan.min = parseFloat(document.getElementById("loanMin").value)||0;
+  save(); renderAll(); toast("Loan details saved");
+}
+function updateLoanWhatIf(){
+  const extra = parseFloat(document.getElementById("loanExtra").value)||0;
+  state.loan.extra = extra; save();
+  document.getElementById("loanExtraLabel").textContent = fmt$0(extra);
+  const l = state.loan;
+  const base = amortize(l.balance, l.rate, l.min, 0);
+  const withExtra = amortize(l.balance, l.rate, l.min, extra);
+  const fmtMonths = m => isFinite(m) ? (m<12? m+" mo" : (Math.floor(m/12)+"y "+(m%12)+"mo")) : "never (raise payment)";
+  document.getElementById("loanPayoffTime").textContent = fmtMonths(withExtra.months);
+  document.getElementById("loanTotalInterest").textContent = isFinite(withExtra.totalInterest)? fmt$0(withExtra.totalInterest) : "—";
+  const savedInterest = isFinite(base.totalInterest) && isFinite(withExtra.totalInterest) ? base.totalInterest - withExtra.totalInterest : 0;
+  document.getElementById("loanInterestSaved").textContent = fmt$0(Math.max(0,savedInterest));
+}
+
+/* =================================================================
+   INVESTMENTS MODULE
+================================================================= */
+function renderInvest(){
+  const t = investTotals();
+  document.getElementById("invInvested").textContent = fmt$0(t.invested);
+  document.getElementById("invCurrent").textContent = fmt$0(t.current);
+  const gainEl = document.getElementById("invGain");
+  gainEl.textContent = (t.gain>=0?"+":"") + fmt$0(t.gain);
+  gainEl.style.color = t.gain>=0 ? "var(--teal)" : "var(--red)";
+
+  const list = document.getElementById("investList");
+  list.innerHTML = state.investments.length ? state.investments.map(i=>{
+    const g = i.current-i.invested;
+    return `<div class="list-row">
+      <div class="lr-main"><div class="lr-icon">📈</div><div><div class="lr-title">${i.name}</div><div class="lr-sub">invested ${fmt$0(i.invested)}</div></div></div>
+      <div class="lr-amt" style="color:${g>=0?'var(--teal)':'var(--red)'}">${fmt$0(i.current)} <span style="font-size:11px; opacity:.8;">(${g>=0?'+':''}${fmt$0(g)})</span></div>
+      <button class="lr-del" onclick="delInvestment('${i.id}')">✕</button>
+    </div>`;
+  }).join("") : `<div class="empty-state">No holdings yet — even a small starter fund counts.</div>`;
+
+  const colors = ["#1F8A70","#3E7CB1","#C9820A","#8E5CC9","#2E9E9E"];
+  const data = state.investments.map((i,idx)=>({label:i.name, value:i.current, color:colors[idx%colors.length]}));
+  document.getElementById("chartInvestDonut").innerHTML = donutChart(data, {centerSub:"current value"});
+  updateCompound();
+}
+function addInvestment(){
+  const name = document.getElementById("invName").value.trim();
+  const invested = parseFloat(document.getElementById("invInvestedAmt").value);
+  const current = parseFloat(document.getElementById("invCurrentAmt").value);
+  if(!name || isNaN(invested) || isNaN(current)){ toast("Fill in all fields"); return; }
+  state.investments.push({id:uid(), name, invested, current});
+  save(); document.getElementById("invName").value=""; document.getElementById("invInvestedAmt").value=""; document.getElementById("invCurrentAmt").value="";
+  renderAll(); toast("Holding added");
+}
+function delInvestment(id){ state.investments = state.investments.filter(i=>i.id!==id); save(); renderAll(); }
+function updateCompound(){
+  const start = parseFloat(document.getElementById("ciStart").value)||0;
+  const monthly = parseFloat(document.getElementById("ciMonthly").value)||0;
+  const years = parseFloat(document.getElementById("ciYears").value)||0;
+  const rate = parseFloat(document.getElementById("ciRate").value)||6;
+  document.getElementById("ciRateLabel").textContent = rate+"%";
+  const r = rate/100/12;
+  let bal = start, contributed = start;
+  for(let m=0;m<years*12;m++){ bal = bal*(1+r) + monthly; contributed += monthly; }
+  document.getElementById("ciContributed").textContent = fmt$0(contributed);
+  document.getElementById("ciFuture").textContent = fmt$0(bal);
+}
+
+/* =================================================================
+   CASH FLOW MODULE
+================================================================= */
+function renderCashflow(){
+  const inc = monthlyIncomeTotal(), exp = monthlyExpenseTotal(), net = inc-exp;
+  document.getElementById("cfIncome").textContent = fmt$0(inc);
+  document.getElementById("cfExpenses").textContent = fmt$0(exp);
+  const netEl = document.getElementById("cfNet");
+  netEl.textContent = (net>=0?"+":"")+fmt$0(net);
+  netEl.style.color = net>=0 ? "var(--teal)":"var(--red)";
+  document.getElementById("cfRate").textContent = Math.round(savingsRate())+"%";
+
+  const byCat = expensesByCat();
+  const labels = ["Income", ...CATS];
+  const series = [{name:"Amount", color:"var(--teal)", values:[inc, ...CATS.map(c=>0)]}];
+  // build combined bar: income bar then expense category bars in amber
+  document.getElementById("chartCashflowBar").innerHTML = barChart(
+    ["Income", ...CATS.map(c=>c.split(" ")[0])],
+    [{name:"Income vs. categories", color:"var(--teal)", values:[inc, ...CATS.map(()=>0)]},
+     {name:"Spent", color:"var(--amber)", values:[0, ...CATS.map(c=>byCat[c]||0)]}]
+  );
+}
+
+/* =================================================================
+   CALCULATORS
+================================================================= */
+function calcSavingsGoal(){
+  const amount = parseFloat(document.getElementById("sgAmount").value)||0;
+  const months = parseFloat(document.getElementById("sgMonths").value)||1;
+  document.getElementById("sgResult").textContent = fmt$0(amount/months);
+}
+function calcBudgetSplit(){
+  const inc = parseFloat(document.getElementById("bsIncome").value)||0;
+  document.getElementById("bsNeeds").textContent = fmt$0(inc*0.5);
+  document.getElementById("bsWants").textContent = fmt$0(inc*0.3);
+  document.getElementById("bsSavings").textContent = fmt$0(inc*0.2);
+}
+
+/* =================================================================
+   INSIGHTS ENGINE
+================================================================= */
+function generateInsights(){
+  const insights = [];
+  const inc = monthlyIncomeTotal(), exp = monthlyExpenseTotal();
+  const rate = savingsRate();
+  const byCat = expensesByCat();
+
+  if(rate < 0){
+    insights.push({type:"bad", icon:"⚠️", title:"You're spending more than you earn", body:`This month's expenses (${fmt$0(exp)}) exceed income (${fmt$0(inc)}). Trim a category or two before it eats into your trip fund.`});
+  } else if(rate < 10){
+    insights.push({type:"warn", icon:"📊", title:"Savings rate is thin", body:`You're saving about ${Math.round(rate)}% of income. Aim for 15–20% if you can — even $10 more a week adds up.`});
+  } else {
+    insights.push({type:"good", icon:"✅", title:"Solid savings rate", body:`You're saving roughly ${Math.round(rate)}% of income each month. Keep this pace and your goals stay on track.`});
+  }
+
+  CATS.forEach(c=>{
+    const budget = state.budgets[c]||0, spent = byCat[c]||0;
+    if(budget>0 && spent>budget){
+      insights.push({type:"bad", icon:"🚨", title:`Over budget on ${c}`, body:`You've spent ${fmt$0(spent)} against a ${fmt$0(budget)} budget. Consider adjusting the limit or cutting back next month.`});
+    }
+  });
+
+  const g = state.goal;
+  const daysLeft = Math.ceil((new Date(g.date)-new Date())/(1000*60*60*24));
+  const remaining = Math.max(0, g.target-g.current);
+  if(daysLeft>0){
+    const neededWeekly = remaining/(daysLeft/7);
+    if(neededWeekly > (g.weekly||0) + 5){
+      insights.push({type:"warn", icon:"✈️", title:`${g.name} needs a faster pace`, body:`To hit ${fmt$0(g.target)} by ${g.date}, you'd need about ${fmt$0(neededWeekly)}/week — more than your current plan of ${fmt$0(g.weekly||0)}/week.`});
+    } else {
+      insights.push({type:"good", icon:"✈️", title:`${g.name} is on track`, body:`At your current pace you're set to reach ${fmt$0(g.target)} comfortably before ${g.date}.`});
+    }
+  }
+
+  const debtToIncome = inc>0 ? state.loan.balance/(inc*12) : 0;
+  if(debtToIncome > 3){
+    insights.push({type:"warn", icon:"🎓", title:"Loan balance is large relative to income", body:`Your student loan is about ${debtToIncome.toFixed(1)}x your annual income. Focus on graduating and growing income before aggressive extra payments.`});
+  }
+
+  const subs = byCat["Subscriptions"]||0;
+  if(subs > 20){
+    insights.push({type:"warn", icon:"📺", title:"Subscriptions are adding up", body:`You spent ${fmt$0(subs)} on subscriptions this month. A quick audit could free up cash for your trip fund.`});
+  }
+
+  if(state.investments.length===0){
+    insights.push({type:"warn", icon:"📈", title:"No investments yet", body:`Even a small, consistent amount (like $10–25/month) in a starter index fund builds the habit early — check the compound calculator.`});
+  }
+
+  return insights;
+}
+function renderInsights(targetId, limit){
+  const insights = generateInsights();
+  const shown = limit ? insights.slice(0,limit) : insights;
+  const el = document.getElementById(targetId);
+  el.innerHTML = shown.map(i=>`
+    <div class="insight ${i.type}"><div class="ic">${i.icon}</div><div class="body"><strong>${i.title}</strong><span>${i.body}</span></div></div>
+  `).join("") || `<div class="empty-state">Add a bit more data for personalized insights.</div>`;
+}
+
+/* =================================================================
+   REPORTS
+================================================================= */
+function renderReport(){
+  const inc = monthlyIncomeTotal(), exp = monthlyExpenseTotal(), net = inc-exp;
+  const score = healthScore(); const tier = tierFor(score);
+  const byCat = expensesByCat();
+  document.getElementById("reportCard").innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+      <div><h2 style="font-size:20px;">Financial Snapshot</h2><div class="eyebrow" style="margin-top:4px;">${state.profile.name} · ${state.profile.type} · Generated ${todayISO()}</div></div>
+      <div style="text-align:right;"><div class="val mono" style="font-size:28px; font-weight:800;">${score}</div><div class="eyebrow">${tier.name}</div></div>
+    </div>
+    <div class="grid grid-4" style="margin-bottom:18px;">
+      <div class="stat-card card"><div class="eyebrow">Monthly income</div><div class="val mono">${fmt$0(inc)}</div></div>
+      <div class="stat-card card"><div class="eyebrow">Monthly expenses</div><div class="val mono">${fmt$0(exp)}</div></div>
+      <div class="stat-card card"><div class="eyebrow">Net cash flow</div><div class="val mono">${net>=0?'+':''}${fmt$0(net)}</div></div>
+      <div class="stat-card card"><div class="eyebrow">Savings rate</div><div class="val mono">${Math.round(savingsRate())}%</div></div>
+    </div>
+    <h3 style="font-size:14px; margin-bottom:8px;">Spending by category</h3>
+    <div class="list" style="margin-bottom:18px;">
+      ${CATS.map(c=>`<div class="list-row"><div class="lr-main"><div class="lr-icon">${CAT_ICON[c]}</div><div class="lr-title">${c}</div></div><div class="lr-amt">${fmt$0(byCat[c]||0)}</div></div>`).join("")}
+    </div>
+    <h3 style="font-size:14px; margin-bottom:8px;">Goal &amp; debt status</h3>
+    <div class="list" style="margin-bottom:6px;">
+      <div class="list-row"><div class="lr-main"><div class="lr-icon">✈️</div><div><div class="lr-title">${state.goal.name}</div><div class="lr-sub">Target ${state.goal.date}</div></div></div><div class="lr-amt">${fmt$0(state.goal.current)} / ${fmt$0(state.goal.target)}</div></div>
+      <div class="list-row"><div class="lr-main"><div class="lr-icon">🎓</div><div><div class="lr-title">Student loan</div><div class="lr-sub">${state.loan.rate}% APR</div></div></div><div class="lr-amt">${fmt$0(state.loan.balance)}</div></div>
+    </div>
+  `;
+}
+
+/* =================================================================
+   LEARN: TIPS / CHECKLIST / RESOURCES / PROMPTS
+================================================================= */
+const TIPS = [
+  {tag:"Budgeting", title:"Try the 50/30/20 rule", body:"Split income into needs, wants, and savings. As a student your 'needs' slice may be smaller — redirect the extra into your trip fund."},
+  {tag:"Habits", title:"Automate your savings", body:"Move money to savings the day you're paid, before you can spend it. Even $10/week builds a real cushion over a semester."},
+  {tag:"Debt", title:"Understand how interest accrues", body:"Student loan interest often compounds. Extra payments toward principal early save more than the same amount later."},
+  {tag:"Spending", title:"Audit subscriptions monthly", body:"Small recurring charges are easy to forget. A five-minute review can free up real money each month."},
+  {tag:"Investing", title:"Start small, start now", body:"Time in the market matters more than amount early on. A modest recurring contribution builds the habit before income grows."},
+  {tag:"Planning", title:"Give every dollar a job", body:"Before spending, decide where money goes — bills, goals, fun. It's easier to say no to impulse buys when the plan is already set."},
+];
+function renderTips(){
+  document.getElementById("tipsGrid").innerHTML = TIPS.map(t=>`
+    <div class="tip-card"><div class="tag">${t.tag}</div><h4>${t.title}</h4><p>${t.body}</p></div>
+  `).join("");
+}
+function renderChecklist(){
+  const wrap = document.getElementById("checklistWrap");
+  wrap.innerHTML = Object.keys(state.checklist).map(item=>`
+    <div class="check-item ${state.checklist[item]?'done':''}" onclick="toggleCheck(this,'${item.replace(/'/g,"\\'")}')">
+      <input type="checkbox" ${state.checklist[item]?'checked':''} onclick="event.stopPropagation(); toggleCheck(this.parentNode,'${item.replace(/'/g,"\\'")}')">
+      <div class="txt">${item}</div>
+    </div>`).join("");
+}
+function toggleCheck(el, item){
+  state.checklist[item] = !state.checklist[item];
+  save(); renderChecklist();
+}
+const RESOURCES = [
+  {ic:"📖", title:"Investopedia — Personal Finance Basics", d:"Clear explainers on budgeting, credit, and investing fundamentals."},
+  {ic:"🏛️", title:"studentaid.gov", d:"Official U.S. source for federal student loan terms and repayment plans."},
+  {ic:"🧮", title:"NerdWallet Calculators", d:"Free calculators for loans, savings, and budgeting scenarios."},
+  {ic:"🎧", title:"'ChooseFI' Podcast", d:"Beginner-friendly conversations about saving and financial independence."},
+];
+function renderResources(){
+  document.getElementById("resourcesGrid").innerHTML = RESOURCES.map(r=>`
+    <div class="res-item"><span class="ic">${r.ic}</span><span><div>${r.title}</div><span class="d">${r.d}</span></span></div>
+  `).join("");
+}
+const PROMPTS = [
+  "Review my monthly budget and suggest 3 realistic ways to free up $50 without cutting essentials.",
+  "Explain how student loan interest capitalization works, in simple terms with an example.",
+  "I save $X per week toward a $Y goal — help me think through trade-offs of saving faster vs. slower.",
+  "What questions should I ask before opening my first investment account as a student?",
+];
+function renderPrompts(){
+  document.getElementById("promptsList").innerHTML = PROMPTS.map(p=>`
+    <div class="list-row"><div class="lr-main"><div class="lr-icon">💬</div><div class="lr-title" style="font-weight:500;">${p}</div></div></div>
+  `).join("");
+}
+
+/* =================================================================
+   MASTER RENDER
+================================================================= */
+function renderAll(){
+  renderBoardingPass();
+  renderOverview();
+  renderIncome();
+  renderBudget();
+  renderGoal();
+  renderLoan();
+  renderInvest();
+  renderCashflow();
+  renderInsights("fullInsights", null);
+  renderReport();
+}
+function printReport(){
+  goTo("reports");
+  setTimeout(()=>window.print(), 200);
+}
+
+/* =================================================================
+   INIT
+================================================================= */
+renderNav();
+applyTheme();
+document.querySelector('.nav-item[data-view="overview"]').classList.add('active');
+renderTips(); renderChecklist(); renderResources(); renderPrompts();
+renderAll();
+</script>
+</body>
+</html>
