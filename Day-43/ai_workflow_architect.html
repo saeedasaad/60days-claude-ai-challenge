@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Native Freelance Workflow — AI Workflow Architect</title>
+<style>
+  :root{
+    --bg:#0F1115;
+    --bg-soft:#12151B;
+    --panel:#171A21;
+    --panel-2:#1E222B;
+    --line:#272C36;
+    --line-soft:#1D212A;
+    --text:#E7E6E2;
+    --text-dim:#8B93A3;
+    --text-faint:#5B6270;
+    --accent:#5EEAD4;
+    --accent-dim:#2A9D8F;
+    --amber:#F5A623;
+    --coral:#FF6B6B;
+    --violet:#8B7FFF;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    --radius: 10px;
+  }
+  html.light{
+    --bg:#F5F5F2;
+    --bg-soft:#EFEEE9;
+    --panel:#FFFFFF;
+    --panel-2:#FAFAF8;
+    --line:#DEDCD4;
+    --line-soft:#E7E5DE;
+    --text:#181A1F;
+    --text-dim:#5B6270;
+    --text-faint:#8B93A3;
+    --accent:#0F8C7E;
+    --accent-dim:#0B6B60;
+    --amber:#B4720C;
+    --coral:#C74747;
+    --violet:#5D4FDB;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    transition:background .3s ease, color .3s ease;
+  }
+  ::selection{ background:var(--accent); color:#0B0D11; }
+  a{ color:var(--accent); }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- layout shell ---------- */
+  .app{ display:grid; grid-template-columns:280px 1fr; min-height:100vh; }
+  @media (max-width:980px){ .app{ grid-template-columns:1fr; } }
+
+  .rail{
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:var(--bg-soft); border-right:1px solid var(--line);
+    padding:20px 16px 40px;
+  }
+  @media (max-width:980px){
+    .rail{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+  }
+  .rail-brand{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .rail-brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  .rail-brand b{ font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); font-family:var(--mono); }
+
+  .rail-progress{ margin-bottom:18px; padding:12px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); }
+  .rail-progress-top{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-bottom:8px; }
+  .rail-progress-bar{ height:6px; border-radius:4px; background:var(--line-soft); overflow:hidden; }
+  .rail-progress-fill{ height:100%; background:linear-gradient(90deg,var(--accent-dim),var(--accent)); width:0%; transition:width .4s ease; }
+
+  .rail-nav{ list-style:none; margin:0; padding:0; }
+  .rail-nav li{ margin-bottom:2px; }
+  .rail-nav a{
+    display:flex; align-items:center; gap:8px;
+    text-decoration:none; color:var(--text-dim); font-size:13.5px;
+    padding:7px 8px; border-radius:7px; border:1px solid transparent;
+  }
+  .rail-nav a:hover{ background:var(--panel); color:var(--text); }
+  .rail-nav a.active{ background:var(--panel-2); color:var(--text); border-color:var(--line); }
+  .rail-nav .hash{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); }
+  .rail-nav .star{ margin-left:auto; opacity:.35; font-size:12px; }
+  .rail-nav .star.on{ opacity:1; color:var(--amber); }
+  .rail-nav li.done a{ color:var(--accent); }
+
+  .rail-tools{ margin-top:18px; display:flex; flex-direction:column; gap:6px; }
+  .rail-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    padding:8px 10px; border-radius:8px; font-size:12.5px; cursor:pointer;
+    display:flex; align-items:center; gap:8px; text-align:left;
+  }
+  .rail-btn:hover{ border-color:var(--accent-dim); }
+
+  main{ min-width:0; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:64px 48px 40px; position:relative; overflow:hidden; border-bottom:1px solid var(--line); }
+  @media (max-width:700px){ .hero{ padding:40px 20px 28px; } }
+  .hero-eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .hero-eyebrow::before{ content:"$"; color:var(--text-faint); }
+  .hero h1{ font-size:clamp(30px,4.4vw,52px); line-height:1.04; letter-spacing:-.02em; margin:0 0 16px; max-width:820px; }
+  .hero h1 em{ font-style:normal; color:var(--accent); }
+  .hero p.lead{ max-width:620px; color:var(--text-dim); font-size:16px; margin:0 0 28px; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:36px; }
+  .chip{ font-family:var(--mono); font-size:11.5px; color:var(--text-dim); border:1px solid var(--line); padding:5px 10px; border-radius:100px; background:var(--panel); }
+  .hero-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ border-radius:8px; padding:10px 16px; font-size:13.5px; cursor:pointer; border:1px solid var(--line); background:var(--panel); color:var(--text); display:inline-flex; align-items:center; gap:8px; }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:#08130F; font-weight:600; }
+  .btn:hover{ border-color:var(--accent-dim); }
+
+  /* commit graph */
+  .graph-wrap{ margin-top:8px; }
+  #graphSvg{ width:100%; height:auto; display:block; }
+  .graph-node circle{ fill:var(--panel-2); stroke:var(--accent-dim); stroke-width:2; }
+  .graph-node.done circle{ fill:var(--accent); stroke:var(--accent); }
+  .graph-node text{ fill:var(--text-dim); font-family:var(--mono); font-size:10px; }
+  .graph-line{ stroke:var(--line); stroke-width:2; }
+
+  /* ---------- sections generic ---------- */
+  section.block{ padding:36px 48px; border-bottom:1px solid var(--line); }
+  @media (max-width:700px){ section.block{ padding:26px 20px; } }
+  .block-head{ margin-bottom:22px; }
+  .block-head h2{ font-size:22px; margin:0 0 6px; letter-spacing:-.01em; }
+  .block-head p{ margin:0; color:var(--text-dim); font-size:13.5px; }
+
+  /* ---------- stage card ---------- */
+  .stage{ border:1px solid var(--line); background:var(--panel); border-radius:14px; margin-bottom:16px; overflow:hidden; scroll-margin-top:18px; }
+  .stage-head{ display:flex; align-items:center; gap:16px; padding:18px 20px; cursor:pointer; user-select:none; }
+  .stage-hash{ font-family:var(--mono); font-size:12px; color:var(--accent); border:1px solid var(--line); background:var(--bg-soft); padding:4px 8px; border-radius:6px; white-space:nowrap; }
+  .stage-titles{ flex:1; min-width:0; }
+  .stage-titles h3{ margin:0 0 3px; font-size:17px; }
+  .stage-titles span{ color:var(--text-dim); font-size:12.5px; }
+  .stage-meta{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+  .stage-time{ font-family:var(--mono); font-size:11.5px; color:var(--text-faint); white-space:nowrap; }
+  .icon-btn{ background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; padding:4px; line-height:1; }
+  .icon-btn.star.on{ color:var(--amber); }
+  .chevron{ transition:transform .25s ease; color:var(--text-faint); }
+  .stage.open .chevron{ transform:rotate(180deg); }
+
+  .stage-body{ max-height:0; overflow:hidden; transition:max-height .35s ease; border-top:1px solid transparent; }
+  .stage.open .stage-body{ border-top:1px solid var(--line); }
+  .stage-body-inner{ padding:22px 20px 26px; display:grid; gap:22px; grid-template-columns:1fr 1fr; }
+  @media (max-width:820px){ .stage-body-inner{ grid-template-columns:1fr; } }
+
+  .sub h4{ margin:0 0 10px; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); font-family:var(--mono); display:flex; align-items:center; gap:6px; }
+  .sub ul{ margin:0; padding-left:18px; font-size:13.8px; }
+  .sub ul li{ margin-bottom:6px; color:var(--text); }
+  .sub.span2{ grid-column:1 / -1; }
+
+  .task-item{ display:flex; align-items:flex-start; gap:9px; margin-bottom:7px; font-size:13.8px; }
+  .task-item input[type=checkbox]{ margin-top:3px; accent-color:var(--accent); }
+  .task-item.checked span{ color:var(--text-faint); text-decoration:line-through; }
+
+  .tool-card{ border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:8px; background:var(--bg-soft); }
+  .tool-card .name{ font-weight:600; font-size:13.8px; display:flex; align-items:center; gap:8px; }
+  .tool-card .tag{ font-family:var(--mono); font-size:9.5px; text-transform:uppercase; background:var(--accent); color:#08130F; padding:2px 6px; border-radius:100px; }
+  .tool-card .why{ color:var(--text-dim); font-size:12.8px; margin-top:4px; }
+  .alt-row{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .alt-pill{ font-size:11.5px; border:1px solid var(--line); padding:3px 9px; border-radius:100px; color:var(--text-dim); }
+
+  .prompt-box{ background:var(--bg-soft); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px; position:relative; }
+  .prompt-box .label{ font-family:var(--mono); font-size:10.5px; color:var(--accent); margin-bottom:4px; text-transform:uppercase; letter-spacing:.06em; }
+  .prompt-box code{ font-family:var(--mono); font-size:12.3px; color:var(--text); white-space:pre-wrap; word-break:break-word; }
+  .copy-btn{ position:absolute; top:8px; right:8px; background:var(--panel-2); border:1px solid var(--line); color:var(--text-dim); font-size:10.5px; padding:3px 7px; border-radius:5px; cursor:pointer; font-family:var(--mono); }
+  .copy-btn:hover{ color:var(--text); }
+
+  .mistake-item{ color:var(--coral); font-size:13.8px; }
+  .practice-item{ color:var(--text); font-size:13.8px; }
+  .practice-item::marker, .mistake-item::marker{ color:inherit; }
+
+  .notes-area{ width:100%; min-height:64px; background:var(--bg-soft); border:1px solid var(--line); color:var(--text); border-radius:8px; padding:9px 10px; font-size:13px; font-family:var(--sans); resize:vertical; }
+  .notes-area::placeholder{ color:var(--text-faint); }
+
+  /* ---------- decision tree ---------- */
+  .tree{ display:flex; flex-direction:column; gap:10px; max-width:640px; }
+  .tree-q{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tree-q p{ margin:0 0 10px; font-size:14px; }
+  .tree-opts{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tree-opt{ background:var(--bg-soft); border:1px solid var(--line); color:var(--text); padding:7px 12px; border-radius:100px; font-size:12.8px; cursor:pointer; }
+  .tree-opt:hover{ border-color:var(--accent); }
+  .tree-result{ border:1px solid var(--accent-dim); background:color-mix(in srgb, var(--accent) 10%, var(--panel)); border-radius:10px; padding:14px 16px; font-size:13.8px; }
+  .tree-result b{ color:var(--accent); }
+  .tree-reset{ align-self:flex-start; font-family:var(--mono); font-size:11px; color:var(--text-dim); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; }
+
+  /* ---------- comparison table ---------- */
+  .cmp{ width:100%; border-collapse:collapse; font-size:13px; }
+  .cmp th, .cmp td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .cmp th{ color:var(--text-dim); font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
+  .cmp tr:hover td{ background:var(--panel-2); }
+  .cmp-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+
+  /* ---------- stack cards ---------- */
+  .stack-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+  .stack-card{ border:1px solid var(--line); background:var(--panel); border-radius:12px; padding:16px; }
+  .stack-card .role{ font-family:var(--mono); font-size:10.5px; text-transform:uppercase; color:var(--accent); letter-spacing:.06em; margin-bottom:6px; }
+  .stack-card h4{ margin:0 0 6px; font-size:15.5px; }
+  .stack-card p{ margin:0; font-size:12.8px; color:var(--text-dim); }
+
+  .keyword-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .keyword-chip{ background:var(--panel); border:1px solid var(--line); color:var(--text-dim); font-size:12.5px; padding:6px 12px; border-radius:100px; }
+
+  .res-list{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+  .res-list li{ border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:10px 14px; font-size:13.5px; display:flex; justify-content:space-between; gap:12px; }
+  .res-list li span.tag{ font-family:var(--mono); font-size:10.5px; color:var(--text-faint); white-space:nowrap; }
+
+  .future-list{ display:grid; gap:10px; }
+  .future-item{ display:flex; gap:12px; border:1px solid var(--line); background:var(--panel); border-radius:10px; padding:12px 14px; }
+  .future-item .n{ font-family:var(--mono); color:var(--accent); font-size:12px; flex-shrink:0; }
+
+  footer{ padding:32px 48px 60px; color:var(--text-faint); font-size:12px; font-family:var(--mono); }
+  @media (max-width:700px){ footer{ padding:24px 20px 40px; } }
+
+  .topbar-actions{ position:fixed; top:16px; right:16px; display:flex; gap:8px; z-index:50; }
+  @media (max-width:980px){ .topbar-actions{ position:static; margin:14px 20px 0; } }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--panel-2); border:1px solid var(--accent-dim); color:var(--text); padding:10px 18px; border-radius:8px; font-size:13px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:100; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media print{
+    .rail, .topbar-actions, .hero-actions, .copy-btn{ display:none !important; }
+    .app{ display:block; }
+    .stage-body{ max-height:none !important; }
+    body{ background:#fff; color:#111; }
+    section.block{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar-actions">
+  <button class="btn" id="themeToggle" title="Toggle theme">◐ Theme</button>
+  <button class="btn" id="printBtn" title="Print this guide">⎙ Print</button>
+</div>
+
+<div class="app">
+  <nav class="rail">
+    <div class="rail-brand"><span class="dot"></span><b>Workflow Architect</b></div>
+
+    <div class="rail-progress">
+      <div class="rail-progress-top"><span>Progress</span><span id="progressPct">0%</span></div>
+      <div class="rail-progress-bar"><div class="rail-progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <ul class="rail-nav" id="railNav"></ul>
+
+    <div class="rail-tools">
+      <button class="rail-btn" id="showAllBtn">▾ Expand all stages</button>
+      <button class="rail-btn" id="bookmarkFilterBtn">★ Show bookmarked only</button>
+      <button class="rail-btn" id="resetBtn">↺ Reset saved progress</button>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="hero-eyebrow">workflow init --project client-app</div>
+      <h1>Ship a client's <em>React Native app</em>,<br>start to finish, without dropping the ball.</h1>
+      <p class="lead">A complete, ten-stage pipeline for freelance React Native projects — from the first discovery call to the maintenance retainer — with the AI tools, prompts, and guardrails for each step.</p>
+      <div class="hero-meta">
+        <span class="chip">Software Development → Mobile → React Native</span>
+        <span class="chip">Scope: Freelance / Client Project</span>
+        <span class="chip">Est. total: 8–12 weeks</span>
+        <span class="chip">10 stages</span>
+      </div>
+      <div class="hero-actions">
+        <button class="btn primary" id="heroStart">Start at Stage 1 ↓</button>
+        <button class="btn" id="heroSummary">Jump to summary</button>
+      </div>
+
+      <div class="graph-wrap">
+        <svg id="graphSvg" viewBox="0 0 980 90" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </header>
+
+    <section class="block" id="pipeline">
+      <div class="block-head">
+        <h2>The pipeline</h2>
+        <p>Every stage expands into objectives, tasks, AI tooling, prompts, and pitfalls. Check off tasks as you go — your progress is saved in this browser.</p>
+      </div>
+      <div id="stagesContainer"></div>
+    </section>
+
+    <section class="block" id="decision">
+      <div class="block-head">
+        <h2>Decision tree — Expo or bare React Native?</h2>
+        <p>The one architectural choice that's expensive to reverse later. Answer honestly about the client's needs.</p>
+      </div>
+      <div class="tree" id="decisionTree"></div>
+    </section>
+
+    <section class="block" id="toolcompare">
+      <div class="block-head">
+        <h2>AI tool comparison</h2>
+        <p>Where each tool earns its place across the pipeline.</p>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead><tr><th>Tool</th><th>Best for</th><th>Strength</th><th>Price tier</th></tr></thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="summary">
+      <div class="block-head">
+        <h2>Workflow summary</h2>
+      </div>
+      <p style="max-width:760px;color:var(--text-dim);font-size:14.5px;">Discovery locks scope and gets a contract signed. Planning and design produce an approved architecture and Figma file before a line of feature code exists. Setup and core development are where AI pair-programming tools save the most hours — expect these two stages to eat roughly half the project timeline. Backend integration, QA, and client review close the loop before the app ever reaches a store listing. Deployment is mostly a waiting game for App Store review, and handoff is where a freelancer either earns a referral or loses one — documentation and a maintenance offer are what separate the two.</p>
+
+      <h3 style="font-size:15px;margin:28px 0 12px;">Recommended AI stack</h3>
+      <div class="stack-grid" id="stackGrid"></div>
+    </section>
+
+    <section class="block" id="resources">
+      <div class="block-head"><h2>Learning resources</h2></div>
+      <ul class="res-list" id="learnList"></ul>
+
+      <h3 style="font-size:15px;margin:28px 0 12px;">Communities</h3>
+      <ul class="res-list" id="communityList"></ul>
+
+      <h3 style="font-size:15px;margin:28px 0 12px;">Search keywords</h3>
+      <div class="keyword-chips" id="keywordChips"></div>
+    </section>
+
+    <section class="block" id="prompts">
+      <div class="block-head"><h2>Additional AI prompts</h2><p>Beyond the per-stage prompts — for the business side of freelancing.</p></div>
+      <div id="extraPrompts"></div>
+    </section>
+
+    <section class="block" id="future">
+      <div class="block-head"><h2>Future automation opportunities</h2></div>
+      <div class="future-list" id="futureList"></div>
+    </section>
+
+    <footer>
+      workflow.status: complete · generated for a single client engagement · notes and checkboxes persist locally in this browser only
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================= DATA ============================= */
+const STAGES = [
+  {
+    id:'discovery', hash:'a1c3f0', title:'Discovery & Scoping', time:'3–5 days',
+    subtitle:'Lock the scope before you quote it.',
+    objectives:[
+      'Understand the client\'s business goal, not just their feature list',
+      'Define a realistic MVP scope',
+      'Set expectations on cost, timeline, and revision limits',
+      'Avoid scope creep before it starts'
+    ],
+    tasks:[
+      'Run a client intake call using a written questionnaire',
+      'Research 2–3 competitor apps for feature baseline',
+      'Draft the MVP feature list and mark anything as "phase 2"',
+      'Write the Statement of Work (SOW) and proposal',
+      'Send contract and deposit invoice'
+    ],
+    tools:[
+      {name:'Claude', why:'Turns rough call notes into a structured SOW and asks the clarifying questions you forgot to.', tag:'Best fit'},
+      {name:'Notion AI', why:'Keeps requirements as a living document the client can comment on.'}
+    ],
+    alternatives:['ChatGPT','Google Docs + Gemini','Bonsai / HoneyBook (contracts)'],
+    prompts:[
+      {label:'SOW drafting', text:'Turn these client notes into a structured Statement of Work with milestones, deliverables, and payment terms: [paste notes]'},
+      {label:'Clarifying questions', text:'List the clarifying questions I should ask a client before quoting a React Native app like this: [describe app idea]'}
+    ],
+    bestPractices:['Fix scope in writing before quoting a price','Ask early whether a backend/API already exists','Keep a reusable discovery questionnaire template'],
+    commonMistakes:['Quoting a price before scope is locked','Assuming the client understands technical tradeoffs','Starting work without a signed contract'],
+    expectedOutputs:['Signed SOW and contract','Locked MVP feature list','Deposit invoice paid'],
+    efficiencyTips:'Feed a call recording transcript to AI and ask it to extract action items — cuts note-writing time in half.'
+  },
+  {
+    id:'planning', hash:'5e2b91', title:'Planning & Architecture', time:'2–3 days',
+    subtitle:'Decide the things that are expensive to change later.',
+    objectives:['Choose Expo vs bare React Native workflow','Pick a state management approach','Map every screen and navigation flow','Define what the API/backend needs to provide'],
+    tasks:['Choose Expo (managed/dev client) or bare workflow','Pick state management: Context, Zustand, or Redux','Map screens and navigation architecture','Define API contract with backend (or plan Supabase/Firebase)','Set up the repo and a ticket board'],
+    tools:[
+      {name:'Claude Code / Copilot', why:'Fast, opinionated scaffolding decisions with reasoning you can sanity-check.', tag:'Best fit'},
+      {name:'Claude (chat)', why:'Turns a text description of screens into a clean architecture doc and folder structure.'}
+    ],
+    alternatives:['Cursor','ChatGPT','Linear or Trello for the ticket board'],
+    prompts:[
+      {label:'Stack comparison', text:'Compare Expo vs React Native CLI for a freelance app with these requirements: [list requirements]. Recommend one and explain the tradeoffs.'},
+      {label:'Architecture doc', text:'Design a folder structure and navigation architecture for a React Native app with these screens: [list screens]'}
+    ],
+    bestPractices:['Decide Expo vs bare RN early — switching later is costly','Write the API contract before building any UI'],
+    commonMistakes:['Over-engineering architecture for a small MVP','Choosing bare RN when Expo would ship faster with no real tradeoff'],
+    expectedOutputs:['Architecture document','Repo initialized with base structure','Ticket board with epics and first sprint'],
+    efficiencyTips:'Ask AI for a first-draft architecture doc, then edit — editing is faster than starting from a blank page.'
+  },
+  {
+    id:'design', hash:'9d47ac', title:'UI/UX Design', time:'4–6 days',
+    subtitle:'Get sign-off on pixels before you write code against them.',
+    objectives:['Translate requirements into wireframes','Produce a design system the client can approve','Match iOS and Android platform conventions'],
+    tasks:['Low-fidelity wireframes for core flows','High-fidelity mockups matching brand','Build a small design system: colors, type, components','Run a client design-approval round'],
+    tools:[
+      {name:'Figma + Figma AI', why:'Fastest path from requirements to an editable, shareable mockup the client actually understands.', tag:'Best fit'},
+      {name:'Galileo AI / Uizard', why:'Generates first-draft UI screens from a text description, good for kickstarting ideas.'}
+    ],
+    alternatives:['v0.dev for component-level UI code','Claude/ChatGPT for UI copywriting'],
+    prompts:[
+      {label:'Onboarding options', text:'Generate 3 onboarding screen layout options for a [app type] React Native app, mobile-first, matching brand colors [x, y, z]'}
+    ],
+    bestPractices:['Get written client sign-off on designs before development starts','Design for platform-specific patterns, e.g. Android back button behavior'],
+    commonMistakes:['Skipping client approval and building from assumptions','Ignoring platform conventions until QA catches it'],
+    expectedOutputs:['Approved Figma file','Exported design tokens and assets'],
+    efficiencyTips:'Reuse a component design-system template across freelance projects instead of rebuilding one each time.'
+  },
+  {
+    id:'setup', hash:'2f88e3', title:'Development Environment Setup', time:'1–2 days',
+    subtitle:'A clean foundation now saves a messy refactor later.',
+    objectives:['Stand up a scalable project foundation','Configure tooling before writing feature code'],
+    tasks:['Initialize Expo/RN project with TypeScript','Configure ESLint, Prettier, and TypeScript rules','Set up React Navigation','Configure environment variables for dev/staging/prod','Connect the git repo and CI pipeline'],
+    tools:[
+      {name:'Claude Code / Copilot', why:'Scaffolds config files correctly on the first try and explains what each one does.', tag:'Best fit'},
+      {name:'EAS (Expo Application Services)', why:'Handles build configuration for both platforms from one config file.'}
+    ],
+    alternatives:['Cursor','Windsurf'],
+    prompts:[
+      {label:'Project bootstrap', text:'Set up a React Native (Expo) project with TypeScript, React Navigation, ESLint, and Prettier. Explain each config file you create.'}
+    ],
+    bestPractices:['Lock dependency versions early','Set up CI (lint + test) from day one, not after bugs appear'],
+    commonMistakes:['Skipping TypeScript to "save time" — it costs more later','No environment separation between dev, staging, and prod'],
+    expectedOutputs:['Bootstrapped repo pushed to GitHub','CI pipeline passing on first commit'],
+    efficiencyTips:'Keep a personal React Native starter template you reuse for every new client project.'
+  },
+  {
+    id:'core', hash:'c710d4', title:'Core Feature Development', time:'2–4 weeks',
+    subtitle:'The largest stage — where AI pair-programming pays off most.',
+    objectives:['Build every screen to match approved designs','Wire up navigation and business logic','Handle loading, error, and offline states'],
+    tasks:['Build screens per Figma design','Implement navigation flows','Integrate state management','Connect forms and validation','Implement loading/offline/error states'],
+    tools:[
+      {name:'Claude Code / Cursor / Copilot', why:'Pair-programs boilerplate and full components, and explains error messages in context.', tag:'Best fit'},
+      {name:'Claude (chat)', why:'Best for refactoring and performance debugging when you need a second opinion on approach.'}
+    ],
+    alternatives:['ChatGPT','Codeium'],
+    prompts:[
+      {label:'Screen implementation', text:'Implement a React Native screen matching this layout: [describe layout], using React Navigation and Zustand for state.'},
+      {label:'Refactor for performance', text:'Refactor this component to reduce re-renders and improve performance: [paste code]'}
+    ],
+    bestPractices:['Commit small, working increments','Build reusable components early, not after duplicating three screens','Test on real devices from week one, not just simulators'],
+    commonMistakes:['Prop-drilling instead of proper state management','Ignoring iOS/Android differences until QA','Only testing on a simulator until the demo'],
+    expectedOutputs:['Feature-complete build on a dev branch','Client demo build (Expo Go / TestFlight internal)'],
+    efficiencyTips:'Ask AI to generate unit tests alongside each component, not as a separate pass afterward.'
+  },
+  {
+    id:'backend', hash:'74a1bd', title:'Backend & API Integration', time:'1–2 weeks',
+    subtitle:'Connect the app to real data, securely.',
+    objectives:['Integrate real API/backend data','Implement authentication','Handle mobile network realities: retries, timeouts, offline'],
+    tasks:['Integrate REST/GraphQL endpoints','Implement auth (OAuth, Firebase, or Supabase)','Add error handling and retry logic','Secure API keys and tokens'],
+    tools:[
+      {name:'Claude Code', why:'Writes a typed API client layer with edge-case handling instead of a bare fetch call.', tag:'Best fit'},
+      {name:'Supabase / Firebase AI assistants', why:'Scaffolds a backend fast when the client has no existing one.'}
+    ],
+    alternatives:['Postman + AI for contract testing'],
+    prompts:[
+      {label:'API client', text:'Write a typed API client in React Native for these endpoints: [list endpoints], including error handling and token refresh.'}
+    ],
+    bestPractices:['Never hardcode secrets in the client bundle','Centralize all API calls in one service layer'],
+    commonMistakes:['No retry handling for flaky mobile networks','Storing auth tokens insecurely'],
+    expectedOutputs:['Working API integration and auth flow','Documented endpoints'],
+    efficiencyTips:'Ask AI to generate the error-handling and retry logic first — it\'s the part most likely to be skipped under time pressure.'
+  },
+  {
+    id:'qa', hash:'3b9f60', title:'Testing & QA', time:'3–5 days',
+    subtitle:'Catch it before the client does.',
+    objectives:['Verify functionality on real iOS and Android devices','Confirm accessibility and performance basics'],
+    tasks:['Write unit/component tests','Manual QA pass on both platforms','Accessibility check','Performance profiling','Client UAT round'],
+    tools:[
+      {name:'Claude + Jest / RN Testing Library', why:'Generates test cases directly from user stories, covering edge cases you\'d otherwise miss.', tag:'Best fit'},
+      {name:'Maestro', why:'End-to-end mobile testing with a simple, readable test format.'}
+    ],
+    alternatives:['Detox','BrowserStack for device coverage'],
+    prompts:[
+      {label:'Test generation', text:'Generate Jest test cases for this login screen component, covering edge cases: [paste component]'}
+    ],
+    bestPractices:['Test on a low-end Android device, not only simulators','Get client UAT sign-off in writing'],
+    commonMistakes:['Only testing on the iOS simulator','Skipping edge cases like no internet or slow network'],
+    expectedOutputs:['Test suite passing in CI','QA checklist signed off','Bug list resolved'],
+    efficiencyTips:'Have AI write tests for the riskiest flows first — auth and payments — not whatever screen is easiest.'
+  },
+  {
+    id:'review', hash:'8ac210', title:'Client Review & Iteration', time:'3–7 days',
+    subtitle:'Structured feedback, not endless revisions.',
+    objectives:['Get clear, prioritized client feedback','Separate bugs from new feature requests'],
+    tasks:['Share demo build (Expo Go / TestFlight)','Collect feedback in one place','Triage requests against original scope','Implement approved revisions'],
+    tools:[
+      {name:'Claude', why:'Turns a messy client feedback email into a prioritized ticket list and flags anything out of scope.', tag:'Best fit'},
+      {name:'Loom', why:'Async video walkthroughs reduce back-and-forth meetings.'}
+    ],
+    alternatives:['Notion or Trello feedback boards'],
+    prompts:[
+      {label:'Feedback triage', text:'Convert this client feedback into a prioritized list of dev tickets, flagging anything outside the original scope: [paste feedback]'}
+    ],
+    bestPractices:['Cap revision rounds in the contract (e.g. 2 rounds included)','Document out-of-scope requests as paid change orders'],
+    commonMistakes:['Offering unlimited free revisions','Treating every request as a "bug" instead of a new feature'],
+    expectedOutputs:['Revised build','Signed-off feature list','Change order invoices, if applicable'],
+    efficiencyTips:'Batch feedback into one review call instead of responding to each message as it arrives.'
+  },
+  {
+    id:'deploy', hash:'f10de2', title:'Deployment & Store Submission', time:'1–2 weeks',
+    subtitle:'Mostly a waiting game for review — plan the timeline around it.',
+    objectives:['Ship the app to the App Store and Google Play','Pass platform review on the first attempt'],
+    tasks:['Prepare store listings: screenshots, description, privacy policy','Configure EAS build and submit','Address App Store review guidelines','Submit to both stores'],
+    tools:[
+      {name:'Claude', why:'Writes App Store / Play Store descriptions and privacy policies that read like a human wrote them.', tag:'Best fit'},
+      {name:'EAS Submit', why:'Automates the submission step for both stores from one command.'}
+    ],
+    alternatives:['Fastlane'],
+    prompts:[
+      {label:'Store listing', text:'Write an App Store listing (title, subtitle, description, keywords) for this app: [describe app], optimized for App Store search.'}
+    ],
+    bestPractices:['Submit the iOS review early — it can take several days','Double-check permission justifications to avoid rejection'],
+    commonMistakes:['Missing a privacy policy URL','Underestimating Apple review time in the project timeline'],
+    expectedOutputs:['App live on both stores, or in review','Store assets archived for future updates'],
+    efficiencyTips:'Submit for iOS review the moment QA passes — don\'t wait for Android to be ready too.'
+  },
+  {
+    id:'handoff', hash:'6cf881', title:'Handoff & Maintenance', time:'2–3 days',
+    subtitle:'Where a freelancer earns the referral, or loses it.',
+    objectives:['Deliver a professional, documented handoff','Set up recurring revenue through a maintenance retainer'],
+    tasks:['Deliver source code and documentation','Run a walkthrough call','Send the final invoice','Propose a maintenance retainer'],
+    tools:[
+      {name:'Claude', why:'Generates a README and handoff document directly from the codebase structure.', tag:'Best fit'},
+      {name:'Notion', why:'A client-facing project wiki that outlives the Slack thread.'}
+    ],
+    alternatives:['GitBook'],
+    prompts:[
+      {label:'Handoff doc', text:'Generate a README and handoff document for this React Native project, covering setup, architecture, and how to request future changes: [paste repo structure]'}
+    ],
+    bestPractices:['Offer the maintenance retainer at handoff, not after the client has moved on','Keep credentials organized for a clean access transfer'],
+    commonMistakes:['Leaving no documentation behind','Disappearing after final payment — it kills referrals'],
+    expectedOutputs:['Handoff document','Transferred repo and store access','Signed final invoice','Maintenance proposal sent'],
+    efficiencyTips:'Draft the handoff doc from day one and update it as you build — don\'t write it all at the end.'
+  }
+];
+
+const DECISION_TREE = {
+  q1:{
+    text:'Does the client need any custom native modules (Bluetooth, custom camera pipeline, background audio, etc.)?',
+    opts:[
+      {label:'Yes, likely', next:'bare'},
+      {label:'No / unsure', next:'q2'}
+    ]
+  },
+  q2:{
+    text:'Is this a short-timeline MVP where shipping speed matters more than deep native control?',
+    opts:[
+      {label:'Yes, speed matters most', next:'expoManaged'},
+      {label:'No, it may grow complex', next:'q3'}
+    ]
+  },
+  q3:{
+    text:'Will you need occasional native code but mostly standard app behavior?',
+    opts:[
+      {label:'Yes, occasionally', next:'expoDev'},
+      {label:'No, fully standard', next:'expoManaged'}
+    ]
+  }
+};
+const DECISION_RESULTS = {
+  bare:'Use <b>bare React Native</b> (or Expo with prebuild). Custom native modules mean you need direct control over native code — Expo\'s managed workflow will fight you here.',
+  expoManaged:'Use <b>Expo managed workflow</b>. Fastest setup, EAS handles builds, and you can add most integrations without ejecting.',
+  expoDev:'Use <b>Expo with a development client</b>. You get Expo\'s speed and EAS builds, plus the ability to add custom native modules when the rare case comes up.'
+};
+
+const TOOL_COMPARE = [
+  {tool:'Claude', best:'Docs, planning, prompts, and code review', strength:'Long context, careful reasoning, strong writing quality', price:'Free tier + paid plans'},
+  {tool:'Claude Code / Copilot', best:'In-editor pair programming', strength:'Deep codebase context, fast iteration', price:'Paid'},
+  {tool:'Cursor', best:'AI-native editor workflows', strength:'Multi-file edits, fast inline suggestions', price:'Free tier + paid'},
+  {tool:'Figma AI', best:'UI mockups and design systems', strength:'Directly editable, client-shareable output', price:'Included in Figma plans'},
+  {tool:'Maestro', best:'End-to-end mobile testing', strength:'Simple YAML-based test flows', price:'Free / open source'}
+];
+
+const STACK = [
+  {role:'Planning & docs', name:'Claude', desc:'SOWs, architecture docs, handoff documentation.'},
+  {role:'In-editor coding', name:'Claude Code / Copilot', desc:'Boilerplate, refactors, debugging in context.'},
+  {role:'Design', name:'Figma + Figma AI', desc:'Client-approved mockups and design systems.'},
+  {role:'Testing', name:'Jest + Maestro', desc:'Unit tests plus real end-to-end mobile flows.'},
+  {role:'Build & deploy', name:'EAS (Expo)', desc:'One config for iOS and Android store submission.'}
+];
+
+const LEARN = [
+  {name:'React Native — official docs', tag:'core'},
+  {name:'Expo documentation', tag:'core'},
+  {name:'React Navigation docs', tag:'core'},
+  {name:'Kent C. Dodds — Testing JavaScript', tag:'testing'},
+  {name:'Apple App Store Review Guidelines', tag:'deploy'},
+  {name:'Google Play Console help center', tag:'deploy'}
+];
+const COMMUNITIES = [
+  {name:'r/reactnative', tag:'reddit'},
+  {name:'Expo Discord', tag:'discord'},
+  {name:'Indie Hackers', tag:'freelance'},
+  {name:'r/freelance', tag:'reddit'},
+  {name:'Contra community', tag:'freelance'}
+];
+const KEYWORDS = [
+  'react native freelance rate card','expo eas build tutorial','react native client contract template',
+  'app store rejection reasons','react native performance optimization','statement of work template freelance dev',
+  'react native vs flutter freelance 2026','maintenance retainer pricing freelance developer'
+];
+const EXTRA_PROMPTS = [
+  {label:'Pricing a project', text:'Help me estimate a price range for a React Native app with these features: [list features], for a client in [region/industry], as a freelancer.'},
+  {label:'Scope creep email', text:'Write a polite but firm email to a client explaining that this request is outside the original project scope, and offering it as a paid add-on.'},
+  {label:'Weekly status update', text:'Turn this list of completed tasks into a short, client-friendly weekly status update email: [paste tasks]'}
+];
+const FUTURE = [
+  'Auto-generate a first-draft SOW from a client intake form submission',
+  'Auto-draft weekly client status emails from your ticket board activity',
+  'Auto-generate App Store screenshots from build artifacts',
+  'Auto-send invoice reminders on a fixed schedule after milestone completion'
+];
+
+/* ============================= STATE ============================= */
+const state = {
+  done: JSON.parse(localStorage.getItem('wf_done')||'{}'),
+  starred: JSON.parse(localStorage.getItem('wf_starred')||'{}'),
+  notes: JSON.parse(localStorage.getItem('wf_notes')||'{}'),
+  open: JSON.parse(localStorage.getItem('wf_open')||'{}'),
+  filterStarred:false
+};
+function persist(){
+  localStorage.setItem('wf_done', JSON.stringify(state.done));
+  localStorage.setItem('wf_starred', JSON.stringify(state.starred));
+  localStorage.setItem('wf_notes', JSON.stringify(state.notes));
+  localStorage.setItem('wf_open', JSON.stringify(state.open));
+}
+
+/* ============================= RENDER: STAGES ============================= */
+const stagesContainer = document.getElementById('stagesContainer');
+const railNav = document.getElementById('railNav');
+
+function taskKey(stageId, idx){ return stageId+'::'+idx; }
+
+function renderStages(){
+  stagesContainer.innerHTML='';
+  railNav.innerHTML='';
+  STAGES.forEach((s,si)=>{
+    const totalTasks = s.tasks.length;
+    const doneTasks = s.tasks.filter((_,ti)=>state.done[taskKey(s.id,ti)]).length;
+    const stageComplete = doneTasks===totalTasks;
+    if(state.filterStarred && !state.starred[s.id]) return;
+
+    // rail item
+    const li = document.createElement('li');
+    if(stageComplete) li.classList.add('done');
+    li.innerHTML = `<a href="#stage-${s.id}" data-id="${s.id}">
+        <span class="hash">${s.hash}</span> ${s.title}
+        <span class="star ${state.starred[s.id]?'on':''}" data-star="${s.id}">★</span>
+      </a>`;
+    railNav.appendChild(li);
+
+    // stage card
+    const card = document.createElement('div');
+    card.className = 'stage'+(state.open[s.id]?' open':'');
+    card.id = 'stage-'+s.id;
+    card.innerHTML = `
+      <div class="stage-head" data-toggle="${s.id}">
+        <span class="stage-hash">${s.hash}</span>
+        <div class="stage-titles">
+          <h3>${si+1}. ${s.title}</h3>
+          <span>${s.subtitle}</span>
+        </div>
+        <div class="stage-meta">
+          <span class="stage-time">${s.time}</span>
+          <button class="icon-btn star ${state.starred[s.id]?'on':''}" data-star="${s.id}" title="Bookmark stage">★</button>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-body-inner">
+          <div class="sub"><h4>Objectives</h4><ul>${s.objectives.map(o=>`<li>${o}</li>`).join('')}</ul></div>
+          <div class="sub"><h4>Tasks · ${doneTasks}/${totalTasks}</h4>
+            ${s.tasks.map((t,ti)=>`
+              <label class="task-item ${state.done[taskKey(s.id,ti)]?'checked':''}">
+                <input type="checkbox" data-task="${s.id}" data-idx="${ti}" ${state.done[taskKey(s.id,ti)]?'checked':''}>
+                <span>${t}</span>
+              </label>`).join('')}
+          </div>
+          <div class="sub"><h4>Best AI tools</h4>
+            ${s.tools.map(t=>`<div class="tool-card"><div class="name">${t.name} ${t.tag?`<span class="tag">${t.tag}</span>`:''}</div><div class="why">${t.why}</div></div>`).join('')}
+            <div class="alt-row">${s.alternatives.map(a=>`<span class="alt-pill">${a}</span>`).join('')}</div>
+          </div>
+          <div class="sub"><h4>Prompt examples</h4>
+            ${s.prompts.map((p,pi)=>`
+              <div class="prompt-box">
+                <div class="label">${p.label}</div>
+                <code>${p.text}</code>
+                <button class="copy-btn" data-copy="${s.id}-${pi}">copy</button>
+              </div>`).join('')}
+          </div>
+          <div class="sub"><h4>Best practices</h4><ul>${s.bestPractices.map(b=>`<li class="practice-item">${b}</li>`).join('')}</ul></div>
+          <div class="sub"><h4>Common mistakes</h4><ul>${s.commonMistakes.map(m=>`<li class="mistake-item">${m}</li>`).join('')}</ul></div>
+          <div class="sub"><h4>Expected outputs</h4><ul>${s.expectedOutputs.map(e=>`<li>${e}</li>`).join('')}</ul></div>
+          <div class="sub"><h4>Efficiency tip</h4><p style="font-size:13.5px;color:var(--text-dim);margin:0;">${s.efficiencyTips}</p></div>
+          <div class="sub span2"><h4>Your notes</h4><textarea class="notes-area" data-notes="${s.id}" placeholder="Jot down anything specific to this client...">${state.notes[s.id]||''}</textarea></div>
+        </div>
+      </div>
+    `;
+    stagesContainer.appendChild(card);
+  });
+  bindStageEvents();
+  updateProgress();
+  drawGraph();
+}
+
+function bindStageEvents(){
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id = el.getAttribute('data-toggle');
+      const card = document.getElementById('stage-'+id);
+      const open = !card.classList.contains('open');
+      card.classList.toggle('open', open);
+      state.open[id]=open; persist();
+      const body = card.querySelector('.stage-body');
+      body.style.maxHeight = open ? body.scrollHeight+'px' : '0px';
+    });
+  });
+  document.querySelectorAll('[data-star]').forEach(el=>{
+    el.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const id = el.getAttribute('data-star');
+      state.starred[id] = !state.starred[id];
+      persist(); renderStages();
+    });
+  });
+  document.querySelectorAll('[data-task]').forEach(el=>{
+    el.addEventListener('change',()=>{
+      const id = el.getAttribute('data-task'), idx = el.getAttribute('data-idx');
+      state.done[taskKey(id,idx)] = el.checked;
+      persist(); renderStages();
+      const card = document.getElementById('stage-'+id);
+      if(card && card.classList.contains('open')){
+        const body = card.querySelector('.stage-body');
+        requestAnimationFrame(()=>{ body.style.maxHeight = body.scrollHeight+'px'; });
+      }
+    });
+  });
+  document.querySelectorAll('[data-notes]').forEach(el=>{
+    el.addEventListener('input',()=>{
+      state.notes[el.getAttribute('data-notes')] = el.value;
+      persist();
+    });
+  });
+  document.querySelectorAll('[data-copy]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const box = el.closest('.prompt-box').querySelector('code').innerText;
+      navigator.clipboard.writeText(box).then(()=>showToast('Prompt copied'));
+    });
+  });
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  STAGES.forEach(s=>s.tasks.forEach((_,ti)=>{ total++; if(state.done[taskKey(s.id,ti)]) done++; }));
+  const pct = total? Math.round(done/total*100) : 0;
+  document.getElementById('progressPct').textContent = pct+'%';
+  document.getElementById('progressFill').style.width = pct+'%';
+}
+
+/* ============================= COMMIT GRAPH ============================= */
+function drawGraph(){
+  const svg = document.getElementById('graphSvg');
+  const n = STAGES.length;
+  const w = 980, y = 45, marginX = 30;
+  const step = (w - marginX*2) / (n-1);
+  let parts = [];
+  for(let i=0;i<n-1;i++){
+    const x1 = marginX + i*step, x2 = marginX + (i+1)*step;
+    parts.push(`<line class="graph-line" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/>`);
+  }
+  STAGES.forEach((s,i)=>{
+    const x = marginX + i*step;
+    const totalTasks = s.tasks.length;
+    const doneTasks = s.tasks.filter((_,ti)=>state.done[taskKey(s.id,ti)]).length;
+    const complete = doneTasks===totalTasks;
+    parts.push(`<g class="graph-node ${complete?'done':''}">
+      <circle cx="${x}" cy="${y}" r="7"/>
+      <text x="${x}" y="${y+24}" text-anchor="middle">${s.hash}</text>
+    </g>`);
+  });
+  svg.innerHTML = parts.join('');
+}
+
+/* ============================= DECISION TREE ============================= */
+const treeEl = document.getElementById('decisionTree');
+function renderTree(nodeKey){
+  if(DECISION_RESULTS[nodeKey]){
+    treeEl.innerHTML = `<div class="tree-result">${DECISION_RESULTS[nodeKey]}</div>
+      <button class="tree-reset" id="treeReset">↺ start over</button>`;
+    document.getElementById('treeReset').addEventListener('click',()=>renderTree('q1'));
+    return;
+  }
+  const node = DECISION_TREE[nodeKey];
+  treeEl.innerHTML = `<div class="tree-q"><p>${node.text}</p>
+    <div class="tree-opts">${node.opts.map(o=>`<button class="tree-opt" data-next="${o.next}">${o.label}</button>`).join('')}</div>
+  </div>`;
+  treeEl.querySelectorAll('[data-next]').forEach(b=>{
+    b.addEventListener('click',()=>renderTree(b.getAttribute('data-next')));
+  });
+}
+
+/* ============================= STATIC SECTIONS ============================= */
+document.getElementById('cmpBody').innerHTML = TOOL_COMPARE.map(t=>
+  `<tr><td><b>${t.tool}</b></td><td>${t.best}</td><td>${t.strength}</td><td>${t.price}</td></tr>`
+).join('');
+
+document.getElementById('stackGrid').innerHTML = STACK.map(s=>
+  `<div class="stack-card"><div class="role">${s.role}</div><h4>${s.name}</h4><p>${s.desc}</p></div>`
+).join('');
+
+document.getElementById('learnList').innerHTML = LEARN.map(l=>
+  `<li>${l.name}<span class="tag">${l.tag}</span></li>`
+).join('');
+document.getElementById('communityList').innerHTML = COMMUNITIES.map(c=>
+  `<li>${c.name}<span class="tag">${c.tag}</span></li>`
+).join('');
+document.getElementById('keywordChips').innerHTML = KEYWORDS.map(k=>
+  `<span class="keyword-chip">${k}</span>`
+).join('');
+
+document.getElementById('extraPrompts').innerHTML = EXTRA_PROMPTS.map((p,i)=>
+  `<div class="prompt-box"><div class="label">${p.label}</div><code>${p.text}</code><button class="copy-btn" data-copy2="${i}">copy</button></div>`
+).join('');
+document.querySelectorAll('[data-copy2]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const txt = el.closest('.prompt-box').querySelector('code').innerText;
+    navigator.clipboard.writeText(txt).then(()=>showToast('Prompt copied'));
+  });
+});
+
+document.getElementById('futureList').innerHTML = FUTURE.map((f,i)=>
+  `<div class="future-item"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${f}</span></div>`
+).join('');
+
+/* ============================= UI CONTROLS ============================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  document.documentElement.classList.toggle('light');
+});
+document.getElementById('printBtn').addEventListener('click',()=>{
+  document.querySelectorAll('.stage').forEach(c=>{
+    c.classList.add('open');
+    c.querySelector('.stage-body').style.maxHeight='none';
+  });
+  setTimeout(()=>window.print(), 60);
+});
+document.getElementById('showAllBtn').addEventListener('click',(e)=>{
+  const anyClosed = STAGES.some(s=>!state.open[s.id]);
+  STAGES.forEach(s=>state.open[s.id]=anyClosed);
+  persist();
+  renderStages();
+  document.querySelectorAll('.stage.open .stage-body').forEach(b=>b.style.maxHeight=b.scrollHeight+'px');
+  e.target.textContent = anyClosed ? '▴ Collapse all stages' : '▾ Expand all stages';
+});
+document.getElementById('bookmarkFilterBtn').addEventListener('click',(e)=>{
+  state.filterStarred = !state.filterStarred;
+  e.target.textContent = state.filterStarred ? '★ Show all stages' : '★ Show bookmarked only';
+  renderStages();
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('Reset all saved progress, notes, and bookmarks?')){
+    localStorage.removeItem('wf_done'); localStorage.removeItem('wf_starred');
+    localStorage.removeItem('wf_notes'); localStorage.removeItem('wf_open');
+    state.done={}; state.starred={}; state.notes={}; state.open={};
+    renderStages(); showToast('Progress reset');
+  }
+});
+document.getElementById('heroStart').addEventListener('click',()=>{
+  document.getElementById('pipeline').scrollIntoView({behavior:'smooth'});
+});
+document.getElementById('heroSummary').addEventListener('click',()=>{
+  document.getElementById('summary').scrollIntoView({behavior:'smooth'});
+});
+
+/* scrollspy for rail nav active state */
+const sections = ()=>STAGES.map(s=>document.getElementById('stage-'+s.id)).filter(Boolean);
+window.addEventListener('scroll',()=>{
+  let current=null;
+  sections().forEach(sec=>{
+    const rect = sec.getBoundingClientRect();
+    if(rect.top<160) current = sec.id;
+  });
+  document.querySelectorAll('.rail-nav a').forEach(a=>{
+    a.classList.toggle('active', current==='stage-'+a.getAttribute('data-id'));
+  });
+},{passive:true});
+
+/* init */
+renderStages();
+renderTree('q1');
+</script>
+</body>
+</html>
