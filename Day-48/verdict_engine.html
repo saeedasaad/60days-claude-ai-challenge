@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pet Insurance Compare &amp; Decide</title>
+<style>
+  :root{
+    --navy:#12283f;
+    --navy-2:#1c3a57;
+    --teal:#0e7c86;
+    --teal-light:#e6f4f3;
+    --amber:#e0964a;
+    --amber-light:#fbe9d7;
+    --paper:#faf8f4;
+    --card:#ffffff;
+    --ink:#1c2530;
+    --ink-soft:#5b6572;
+    --line:#e4e1da;
+    --good:#2f8f5b;
+    --warn:#c07c1f;
+    --bad:#c14545;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(18,40,63,.06), 0 1px 2px rgba(18,40,63,.08);
+    --shadow-lg:0 12px 32px rgba(18,40,63,.14);
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype',Georgia,'Segoe UI',serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .ui, button, input, select{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  a{color:var(--teal);}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* ---------- header ---------- */
+  header.top{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 60%,#204863 100%);
+    color:#fff;
+    padding:38px 20px 46px;
+    border-radius:0 0 28px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-60px; top:-60px;
+    width:260px;height:260px;border-radius:50%;
+    background:radial-gradient(circle,rgba(224,150,74,.22),transparent 70%);
+  }
+  header.top .inner{max-width:1180px;margin:0 auto;position:relative;}
+  .eyebrow{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    text-transform:uppercase; letter-spacing:.14em; font-size:.72rem;
+    color:var(--amber); font-weight:700; margin-bottom:10px;
+  }
+  h1{font-size:clamp(1.7rem,3.4vw,2.5rem); margin:0 0 10px; font-weight:600; letter-spacing:-.01em;}
+  header.top p.sub{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    max-width:640px; color:#cfe0e6; font-size:1rem; margin:0;
+  }
+  .who-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+    padding:7px 14px; border-radius:100px; font-size:.82rem; margin-top:18px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:#eaf3f2;
+  }
+
+  /* ---------- layout ---------- */
+  .grid{
+    display:grid; grid-template-columns: 320px 1fr; gap:22px; margin-top:-24px;
+  }
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    border:1px solid var(--line);
+  }
+
+  /* ---------- weight panel ---------- */
+  .panel-weights{
+    padding:22px 20px 24px; position:sticky; top:16px; align-self:start;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    max-height:calc(100vh - 32px); overflow-y:auto;
+  }
+  @media (max-width:900px){ .panel-weights{position:static; max-height:none;} }
+  .panel-weights h2{font-size:1.02rem; margin:0 0 4px; color:var(--navy);}
+  .panel-weights .hint{font-size:.8rem; color:var(--ink-soft); margin:0 0 18px;}
+  .slider-row{margin-bottom:16px;}
+  .slider-row label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:.85rem; font-weight:600; color:var(--ink); margin-bottom:6px;
+  }
+  .slider-row .val{color:var(--teal); font-variant-numeric:tabular-nums; font-weight:700;}
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:6px; border-radius:4px;
+    background:var(--line); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--teal); border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.3); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background:var(--teal); border:3px solid #fff; cursor:pointer;
+  }
+  .weight-actions{display:flex; gap:8px; margin-top:14px;}
+  .btn{
+    font-family:inherit; font-size:.8rem; font-weight:600; cursor:pointer;
+    border-radius:9px; padding:9px 12px; border:1px solid var(--line);
+    background:#fff; color:var(--navy); transition:.15s;
+  }
+  .btn:hover{background:var(--teal-light); border-color:var(--teal);}
+  .btn.primary{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .btn.primary:hover{background:#0a6871;}
+
+  /* ---------- results ---------- */
+  .results-head{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin:0 0 14px; flex-wrap:wrap;}
+  .results-head h2{margin:0; font-size:1.3rem; color:var(--navy); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+  .results-head .sub{font-size:.82rem; color:var(--ink-soft); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+
+  .rank-card{
+    padding:18px 20px; margin-bottom:14px; position:relative;
+    display:grid; grid-template-columns:44px 1fr auto; gap:16px; align-items:center;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .rank-card:hover{box-shadow:var(--shadow-lg); transform:translateY(-1px);}
+  .rank-card.top{border-color:var(--amber);}
+  .rank-num{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-weight:800; font-size:1.3rem; color:var(--ink-soft); text-align:center;
+  }
+  .rank-card.top .rank-num{color:var(--amber);}
+  .rank-main .name-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .rank-main h3{margin:0; font-size:1.15rem; color:var(--navy); font-weight:700;}
+  .pill{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:.68rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:3px 9px; border-radius:100px; background:var(--amber-light); color:#8a5416;
+  }
+  .bar-track{
+    margin-top:10px; height:10px; border-radius:6px; background:var(--line); overflow:hidden;
+  }
+  .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,var(--teal),#14a3a7); transition:width .5s cubic-bezier(.4,0,.2,1);}
+  .rank-meta{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:.78rem; color:var(--ink-soft); margin-top:8px; display:flex; gap:14px; flex-wrap:wrap;
+  }
+  .rank-score{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    text-align:right;
+  }
+  .rank-score .num{font-size:1.5rem; font-weight:800; color:var(--teal);}
+  .rank-score .lbl{font-size:.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;}
+
+  .empty-state{
+    padding:40px 24px; text-align:center; color:var(--ink-soft);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  .empty-state .icon{font-size:2.2rem; margin-bottom:10px;}
+
+  /* ---------- detail table ---------- */
+  .detail-section{margin-top:28px;}
+  .detail-section h2{font-size:1.3rem; color:var(--navy); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; margin-bottom:4px;}
+  .detail-section .sub{font-size:.82rem; color:var(--ink-soft); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; margin-bottom:16px;}
+  .table-scroll{overflow-x:auto; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--line);}
+  table.compare{
+    width:100%; border-collapse:collapse; background:#fff; min-width:760px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:.86rem;
+  }
+  table.compare th, table.compare td{
+    padding:12px 14px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;
+  }
+  table.compare thead th{
+    background:var(--navy); color:#fff; position:sticky; top:0; font-weight:600; font-size:.78rem;
+    text-transform:uppercase; letter-spacing:.03em;
+  }
+  table.compare tbody tr:nth-child(even){background:#fbfaf7;}
+  table.compare td.crit{font-weight:700; color:var(--navy); white-space:nowrap;}
+  .src-tag{
+    display:inline-block; font-size:.66rem; background:var(--teal-light); color:var(--teal);
+    padding:1px 6px; border-radius:5px; margin-left:5px; font-weight:700; vertical-align:2px;
+    cursor:pointer; text-decoration:none;
+  }
+  .flag{
+    display:inline-block; font-size:.66rem; background:var(--amber-light); color:#8a5416;
+    padding:1px 7px; border-radius:5px; margin-left:5px; font-weight:700; white-space:nowrap;
+  }
+
+  /* ---------- collapsibles ---------- */
+  .collapse{
+    margin-top:18px; overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  .collapse-head{
+    display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+    padding:18px 20px; user-select:none;
+  }
+  .collapse-head h2{margin:0; font-size:1.05rem; color:var(--navy);}
+  .collapse-head .chev{transition:transform .25s; color:var(--teal); font-size:1.1rem;}
+  .collapse.open .chev{transform:rotate(180deg);}
+  .collapse-body{
+    max-height:0; transition:max-height .35s ease; padding:0 20px;
+  }
+  .collapse.open .collapse-body{padding-bottom:20px;}
+  .collapse-body-inner{font-size:.88rem; color:var(--ink-soft);}
+  .collapse-body-inner h4{color:var(--navy); font-size:.9rem; margin:16px 0 6px;}
+  .collapse-body-inner h4:first-child{margin-top:0;}
+  .collapse-body-inner ul{margin:6px 0; padding-left:20px;}
+  .collapse-body-inner li{margin-bottom:6px;}
+  .src-list{list-style:none; margin:0; padding:0;}
+  .src-list li{
+    padding:10px 0; border-bottom:1px dashed var(--line); font-size:.83rem;
+    display:flex; gap:10px;
+  }
+  .src-list li:last-child{border-bottom:none;}
+  .src-num{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:var(--teal-light);
+    color:var(--teal); font-weight:800; font-size:.72rem; display:flex; align-items:center; justify-content:center;
+  }
+  .src-list a{font-weight:600;}
+  .src-list .src-desc{color:var(--ink-soft); font-size:.78rem; display:block; margin-top:2px;}
+
+  footer.foot{
+    margin-top:36px; text-align:center; font-size:.76rem; color:var(--ink-soft);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+
+  .loading{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding:50px 0; color:var(--ink-soft);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  .spinner{
+    width:20px;height:20px;border-radius:50%;border:3px solid var(--line);
+    border-top-color:var(--teal); animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <div class="eyebrow">Compare &amp; Decide</div>
+    <h1>Pet Insurance: Is it worth it, and which plan fits?</h1>
+    <p class="sub">A budget-conscious comparison of four accident-and-illness plans — Trupanion, Healthy Paws, Lemonade, and ASPCA Pet Health Insurance — built from provider policy pages, independent reviewers, and complaint/rating data. Adjust what matters to you below; the ranking updates live.</p>
+    <div class="who-badge">🐾 Built for: owners weighing insurance premiums against the risk of paying vet bills out of pocket</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="app" class="grid" style="display:none;">
+
+    <!-- WEIGHT PANEL -->
+    <aside class="card panel-weights">
+      <h2>What matters to you?</h2>
+      <p class="hint">Drag each slider to set its importance (0 = ignore, 10 = top priority). The ranking recalculates instantly.</p>
+      <div id="sliders"></div>
+      <div class="weight-actions">
+        <button class="btn primary" id="btn-equal">Reset to equal</button>
+        <button class="btn" id="btn-zero">Clear all</button>
+      </div>
+    </aside>
+
+    <!-- RESULTS -->
+    <main>
+      <div class="card" style="padding:22px 20px;">
+        <div class="results-head">
+          <div>
+            <h2>Your ranked results</h2>
+            <div class="sub">Weighted score out of 100, based on the criteria and weights you set on the left.</div>
+          </div>
+        </div>
+        <div id="results"></div>
+      </div>
+
+      <div class="detail-section">
+        <h2>Full data comparison</h2>
+        <div class="sub">Every raw data point used in the scoring model, with source tags. Click a source tag to jump to its citation below.</div>
+        <div class="table-scroll">
+          <table class="compare" id="compare-table"></table>
+        </div>
+      </div>
+
+      <div class="card collapse" id="panel-research">
+        <div class="collapse-head" data-target="panel-research">
+          <h2>📋 How this was researched</h2>
+          <span class="chev">▾</span>
+        </div>
+        <div class="collapse-body">
+          <div class="collapse-body-inner" id="research-content"></div>
+        </div>
+      </div>
+
+      <div class="card collapse" id="panel-sources">
+        <div class="collapse-head" data-target="panel-sources">
+          <h2>🔗 Sources (<span id="src-count">0</span>)</h2>
+          <span class="chev">▾</span>
+        </div>
+        <div class="collapse-body">
+          <div class="collapse-body-inner">
+            <ul class="src-list" id="src-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <footer class="foot">
+        Educational comparison tool, not insurance advice. Rates, deductibles, limits, and ratings change — verify current terms directly with each provider before buying. Last researched July 2026.
+      </footer>
+    </main>
+  </div>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div> Loading comparison data…
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SOURCES
+   ============================================================ */
+const SOURCES = [
+  {id:'us_trup', name:'U.S. News — Trupanion Pet Insurance Review 2026', url:'https://www.usnews.com/insurance/pet-insurance/trupanion', desc:'Sample premium, waiting periods'},
+  {id:'nw_trup', name:'NerdWallet — Trupanion Pet Insurance Review 2026', url:'https://www.nerdwallet.com/insurance/pet/trupanion-pet-insurance-review', desc:'Deductible structure, reimbursement rate'},
+  {id:'vmg_trup', name:'VetMedGuide — Trupanion Pet Insurance Coverage', url:'https://vetmedguide.com/blog/trupanion-pet-insurance-coverage', desc:'Annual/lifetime payout limit'},
+  {id:'pw_trup', name:'Pawlicy Advisor — Trupanion Pet Insurance Review 2026', url:'https://www.pawlicy.com/insurance-company/trupanion/', desc:'Claims/reimbursement speed via Vet Direct Pay'},
+  {id:'ig_trup', name:'InsuranceGuidances — Trupanion Pet Insurance Review 2026', url:'https://insuranceguidances.com/trupanion-pet-insurance-review/', desc:'Chronic/hereditary condition coverage'},
+  {id:'fn_trup', name:'Fortunly — Trupanion Review', url:'https://fortunly.com/reviews/trupanion-review/', desc:'BBB rating, Trustpilot score'},
+  {id:'mg_trup', name:'MoneyGeek — Trupanion Pet Insurance Review 2026', url:'https://www.moneygeek.com/insurance/pet/trupanion-review/', desc:'BBB rating, Trustpilot score (cross-check)'},
+  {id:'bbb_trup', name:'Better Business Bureau — Trupanion Business Profile', url:'https://www.bbb.org/us/wa/seattle/profile/insurance-companies/trupanion-1296-22429232', desc:'BBB accreditation/grade'},
+
+  {id:'us_hp', name:'U.S. News — Healthy Paws Pet Insurance Review 2026', url:'https://www.usnews.com/insurance/pet-insurance/healthy-paws', desc:'Sample premium (dog/cat), deductible options, hip dysplasia rule'},
+  {id:'ma_hp', name:'Money Atlas — Healthy Paws Pet Insurance Review 2026', url:'https://www.moneyatlas.com/review/healthy-paws', desc:'Reimbursement percentage range'},
+  {id:'faq_hp', name:'Healthy Paws — Frequently Asked Questions', url:'https://www.healthypawspetinsurance.com/frequent-questions.html', desc:'Waiting period, annual limit choices'},
+  {id:'ce_hp', name:'Healthy Paws — Coverage & Exclusions Details', url:'https://www.healthypawspetinsurance.com/pet-insurance-coverage-and-exclusions.html', desc:'Annual limit mechanics'},
+  {id:'fig_hp', name:'U.S. News — Healthy Paws vs. Figo Pet Insurance 2026', url:'https://www.usnews.com/insurance/pet-insurance/healthy-paws-vs-figo', desc:'Average claim turnaround (~1 business day)'},
+  {id:'tp_hp', name:'Trustpilot — Healthy Paws Pet Insurance', url:'https://www.trustpilot.com/review/www.healthypawspetinsurance.com', desc:'Live Trustpilot score'},
+  {id:'in_hp', name:'Insurify — Healthy Paws Reviews 2026', url:'https://insurify.com/pet-insurance/companies/healthy-paws/', desc:'BBB rating cross-check'},
+
+  {id:'us_lem', name:'U.S. News — Lemonade Pet Insurance Review 2026', url:'https://www.usnews.com/insurance/pet-insurance/lemonade', desc:'Sample premium (dog/cat)'},
+  {id:'br_lem', name:'Bankrate — Lemonade Pet Insurance Review 2026', url:'https://www.bankrate.com/insurance/pet-insurance/lemonade', desc:'Deductible options, max payout range'},
+  {id:'pf_lem', name:'Petful — Lemonade Pet Insurance Review 2026', url:'https://www.petful.com/spotlight/lemonade-pet-insurance/', desc:'Waiting periods, curable pre-existing condition policy, claims speed, ratings'},
+  {id:'lm_lem', name:'Lemonade — Pet Insurance Terms, Explained', url:'https://www.lemonade.com/pet/explained/pet-insurance-terms-explained/', desc:'Reimbursement percentage options'},
+  {id:'mg_lem', name:'MoneyGeek — Lemonade vs. ASPCA Pet Insurance 2026', url:'https://www.moneygeek.com/insurance/pet/lemonade-vs-aspca/', desc:'BBB rating, Trustpilot score, complaint counts'},
+
+  {id:'nw_asp', name:'NerdWallet — ASPCA Pet Insurance Review 2026', url:'https://www.nerdwallet.com/insurance/pet/aspca-pet-insurance-review', desc:'Deductible, reimbursement, waiting period'},
+  {id:'bg_asp', name:'BestGuide — ASPCA Pet Insurance Review 2026', url:'https://bestguide.com/review/aspca-pet-insurance-review/', desc:'Annual limit range, pre-existing condition rules'},
+  {id:'ap_asp', name:'ASPCA Pet Health Insurance — How Does Pet Insurance Work', url:'https://www.aspcapetinsurance.com/research-and-compare/pet-insurance-basics/how-does-pet-insurance-work/', desc:'Reimbursement mechanics'},
+  {id:'us_asp', name:'U.S. News — ASPCA Pet Health Insurance Review 2026', url:'https://www.usnews.com/insurance/pet-insurance/aspca-pet-health-insurance', desc:'Plan structure'},
+  {id:'usc_asp', name:'U.S. News — Cheapest Pet Insurance Companies of 2026', url:'https://www.usnews.com/insurance/pet-insurance/best-cheap-pet-insurance', desc:'Sample "Complete Coverage" premium, claims processing timeline'},
+
+  {id:'naic', name:'National Association of Insurance Commissioners — Consumer Information', url:'https://content.naic.org/consumer.htm', desc:'Complaint index methodology reference (see research notes — per-company index values were not available in citable public form for this comparison)'},
+];
+
+/* ============================================================
+   PROVIDER DATA  (all figures sourced — see table + panel below)
+   ============================================================ */
+const PROVIDERS = [
+  {
+    id:'trupanion', name:'Trupanion', tagline:'Fixed 90% reimbursement, per-condition deductible, no payout caps',
+    premium:{value:165.49, label:'$165.49/mo', note:'Sample rate, dog, $250-equivalent scenario at 90% reimb / unlimited cap, averaged across 51 U.S. jurisdictions — highest of the four', src:['us_trup']},
+    deductible:{min:0, max:1000, label:'$0–$1,000 (per-condition, not annual)', note:'Deductible applies once per condition for life, not once per year — structurally different from the other three plans', src:['nw_trup']},
+    reimbursement:{max:90, label:'90% (fixed — no other option)', src:['nw_trup']},
+    cap:{score:100, label:'Unlimited (only option)', src:['vmg_trup']},
+    chronic:{score:100, label:'Covers hereditary &amp; congenital conditions from enrollment; broadest stated coverage of the four', estimate:true, src:['ig_trup','vmg_trup']},
+    waiting:{illness:30, accident:5, label:'5 days (accident) / 30 days (illness)', src:['us_trup']},
+    claimSpeedDays:{value:1.5, label:'Vet Direct Pay settles at checkout; reimbursement in "as little as 24 hours" when used', estimate:true, src:['pw_trup']},
+    satisfaction:{bbb:'A+', bbbScore:97, trustpilot:4.3, label:'BBB A+ · Trustpilot ≈4.3/5', estimate:true, note:'Trustpilot score averaged from a 4.2–4.4 range reported across sources in 2025–2026', src:['fn_trup','mg_trup','bbb_trup']}
+  },
+  {
+    id:'healthypaws', name:'Healthy Paws', tagline:'Unlimited annual option, fast claims, no wellness add-ons',
+    premium:{value:64.71, valueCat:32.93, label:'$64.71/mo (dog) · $32.93/mo (cat)', note:'Same $250-deductible / 90%-reimb / unlimited-cap sample methodology as Trupanion', src:['us_hp']},
+    deductible:{min:100, max:5000, label:'$100–$5,000 (annual, resets yearly)', src:['us_hp']},
+    reimbursement:{max:90, label:'50%–90% (customizable)', src:['ma_hp']},
+    cap:{score:100, label:'Choice of $5,000, $7,000, or Unlimited', src:['faq_hp','ce_hp']},
+    chronic:{score:85, label:'Covers hereditary, congenital &amp; chronic conditions; hip dysplasia only if enrolled before age 6', estimate:true, src:['us_hp']},
+    waiting:{illness:15, accident:15, label:'15 days (accident &amp; illness)', src:['faq_hp']},
+    claimSpeedDays:{value:1.5, label:'Claims reimbursed in an average of ~1–2 business days', estimate:false, src:['fig_hp']},
+    satisfaction:{bbb:'A+', bbbScore:97, trustpilot:4.1, label:'BBB A+ · Trustpilot 4.1/5', estimate:false, note:'Trustpilot score taken directly from Healthy Paws\' live Trustpilot profile', src:['tp_hp','in_hp']}
+  },
+  {
+    id:'lemonade', name:'Lemonade Pet', tagline:'Cheapest sample premiums, AI-assisted instant claims, add-on heavy',
+    premium:{value:50.96, valueCat:30.73, label:'$50.96/mo (dog) · $30.73/mo (cat)', note:'Same $250-deductible / 90%-reimb / unlimited-cap sample methodology as Trupanion & Healthy Paws', src:['us_lem']},
+    deductible:{min:100, max:750, label:'$100–$500 typical (some states/policies to $750–$1,000)', note:'Bankrate and Petful report slightly different top-end figures — range shown covers both', src:['br_lem','pf_lem']},
+    reimbursement:{max:90, label:'70% / 80% / 90% (customizable)', src:['lm_lem']},
+    cap:{score:92, label:'$5,000–$100,000 (no true "unlimited" tier)', src:['br_lem']},
+    chronic:{score:80, label:'Curable pre-existing conditions can be covered after 12 symptom-free months (cruciate/knee issues excluded permanently)', estimate:true, src:['pf_lem']},
+    waiting:{illness:14, accident:2, label:'~2 days (accident, most states) / 14 days (illness) / 6 months (cruciate ligament)', src:['pf_lem']},
+    claimSpeedDays:{value:2.5, label:'~50% of claims settled instantly by AI; remainder typically within ~5 days', estimate:true, src:['pf_lem','us_lem']},
+    satisfaction:{bbb:'B-', bbbScore:70, trustpilot:4.05, label:'BBB B- · Trustpilot ≈4.0/5', estimate:true, note:'Trustpilot averaged from a 4.0–4.1 range; BBB grade lowered by premium-hike and claim-denial complaints', src:['mg_lem','pf_lem']}
+  },
+  {
+    id:'aspca', name:'ASPCA Pet Health', tagline:'Broad coverage &amp; brand trust, slower claims processing',
+    premium:{value:39.20, label:'$39.20/mo (sample)', note:'U.S. News "Complete Coverage" sample premium — reported as a single blended figure, not split by dog/cat like the other three providers', flagLabel:'Different methodology', src:['usc_asp']},
+    deductible:{min:100, max:500, label:'$100 / $250 / $500 (annual)', src:['nw_asp']},
+    reimbursement:{max:90, label:'70% / 80% / 90% (customizable)', src:['nw_asp']},
+    cap:{score:100, label:'$2,500 up to Unlimited (unlimited tier requires calling)', note:'Online quote tool typically caps at $10,000–$20,000; unlimited only available by phone', src:['bg_asp']},
+    chronic:{score:75, label:'Covers hereditary/congenital conditions; incurable pre-existing conditions permanently excluded (curable ones re-eligible after 180 symptom-free days)', estimate:true, src:['bg_asp']},
+    waiting:{illness:14, accident:14, label:'14 days (accident &amp; illness, no extended orthopedic wait)', src:['nw_asp']},
+    claimSpeedDays:{value:22, label:'Claims processing can take up to 30 days, with reimbursement 3–30 days after that — slowest of the four', estimate:true, src:['usc_asp']},
+    satisfaction:{bbb:'A+', bbbScore:97, trustpilot:3.6, label:'BBB A+ · Trustpilot ≈3.6/5', estimate:false, src:['mg_lem']}
+  }
+];
+
+/* ============================================================
+   CRITERIA CONFIG  (id, label, weight default, direction, accessor)
+   ============================================================ */
+const CRITERIA = [
+  {id:'premium', label:'Low monthly premium', group:'Cost', getScore:(p)=>p._score.premium},
+  {id:'deductible', label:'Low / flexible deductible', group:'Cost', getScore:(p)=>p._score.deductible},
+  {id:'reimbursement', label:'High reimbursement %', group:'Payout', getScore:(p)=>p._score.reimbursement},
+  {id:'cap', label:'High annual/lifetime cap', group:'Payout', getScore:(p)=>p._score.cap},
+  {id:'chronic', label:'Chronic/hereditary coverage', group:'Coverage', getScore:(p)=>p._score.chronic},
+  {id:'waiting', label:'Short waiting periods', group:'Coverage', getScore:(p)=>p._score.waiting},
+  {id:'claimSpeed', label:'Fast claim processing', group:'Service', getScore:(p)=>p._score.claimSpeed},
+  {id:'satisfaction', label:'Customer satisfaction', group:'Service', getScore:(p)=>p._score.satisfaction},
+];
+
+let weights = {};
+CRITERIA.forEach(c=>weights[c.id]=5); // default equal mid-priority
+
+/* ============================================================
+   SCORING: normalize each raw metric 0-100 across the 4 providers
+   ============================================================ */
+function normalize(values, higherIsBetter){
+  const nums = values.filter(v=>typeof v==='number' && isFinite(v));
+  const min = Math.min(...nums), max = Math.max(...nums);
+  return values.map(v=>{
+    if(typeof v!=='number' || !isFinite(v)) return 50;
+    if(max===min) return 100;
+    const t = (v-min)/(max-min);
+    return higherIsBetter ? t*100 : (1-t)*100;
+  });
+}
+
+function computeAllScores(){
+  const premiums = PROVIDERS.map(p=>p.premium.value);
+  const premiumScores = normalize(premiums, false);
+
+  const deductibles = PROVIDERS.map(p=>p.deductible.min);
+  const deductibleScores = normalize(deductibles, false);
+
+  const reimb = PROVIDERS.map(p=>p.reimbursement.max);
+  const reimbScores = normalize(reimb, true);
+
+  const caps = PROVIDERS.map(p=>p.cap.score);
+  const capScores = normalize(caps, true);
+
+  const chronic = PROVIDERS.map(p=>p.chronic.score);
+  const chronicScores = normalize(chronic, true);
+
+  const waits = PROVIDERS.map(p=>p.waiting.illness);
+  const waitScores = normalize(waits, false);
+
+  const speeds = PROVIDERS.map(p=>p.claimSpeedDays.value);
+  const speedScores = normalize(speeds, false);
+
+  const sat = PROVIDERS.map(p=>p.satisfaction.bbbScore*0.5 + (p.satisfaction.trustpilot/5*100)*0.5);
+  const satScores = normalize(sat, true);
+
+  PROVIDERS.forEach((p,i)=>{
+    p._score = {
+      premium: premiumScores[i],
+      deductible: deductibleScores[i],
+      reimbursement: reimbScores[i],
+      cap: capScores[i],
+      chronic: chronicScores[i],
+      waiting: waitScores[i],
+      claimSpeed: speedScores[i],
+      satisfaction: satScores[i],
+    };
+  });
+}
+
+function weightedTotal(p){
+  const totalWeight = CRITERIA.reduce((s,c)=>s+weights[c.id],0);
+  if(totalWeight===0) return null;
+  let sum=0;
+  CRITERIA.forEach(c=>{ sum += c.getScore(p) * weights[c.id]; });
+  return sum/totalWeight;
+}
+
+/* ============================================================
+   RENDER: sliders
+   ============================================================ */
+function renderSliders(){
+  const wrap = document.getElementById('sliders');
+  wrap.innerHTML = '';
+  CRITERIA.forEach(c=>{
+    const row = document.createElement('div');
+    row.className='slider-row';
+    row.innerHTML = `
+      <label>${c.label} <span class="val" id="val-${c.id}">${weights[c.id]}</span></label>
+      <input type="range" min="0" max="10" step="1" value="${weights[c.id]}" id="slider-${c.id}">
+    `;
+    wrap.appendChild(row);
+  });
+  CRITERIA.forEach(c=>{
+    document.getElementById(`slider-${c.id}`).addEventListener('input', (e)=>{
+      weights[c.id] = parseInt(e.target.value,10);
+      document.getElementById(`val-${c.id}`).textContent = weights[c.id];
+      renderResults();
+    });
+  });
+}
+
+/* ============================================================
+   RENDER: results
+   ============================================================ */
+function renderResults(){
+  const container = document.getElementById('results');
+  const totalWeight = CRITERIA.reduce((s,c)=>s+weights[c.id],0);
+
+  if(totalWeight===0){
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚖️</div>
+        <div><strong>No priorities selected.</strong></div>
+        <div>Move at least one slider above zero to generate a ranking.</div>
+      </div>`;
+    return;
+  }
+
+  const scored = PROVIDERS.map(p=>({p, total: weightedTotal(p)}))
+    .sort((a,b)=>b.total-a.total);
+
+  container.innerHTML = scored.map((row, idx)=>{
+    const p = row.p;
+    const top = idx===0 ? 'top' : '';
+    return `
+    <div class="card rank-card ${top} fade-in" style="animation-delay:${idx*0.05}s">
+      <div class="rank-num">#${idx+1}</div>
+      <div class="rank-main">
+        <div class="name-row">
+          <h3>${p.name}</h3>
+          ${idx===0 ? '<span class="pill">Best match</span>' : ''}
+        </div>
+        <div style="font-size:.82rem;color:var(--ink-soft);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">${p.tagline}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${row.total.toFixed(1)}%"></div></div>
+        <div class="rank-meta">
+          <span>💵 ${p.premium.label}</span>
+          <span>🔁 ${p.reimbursement.label}</span>
+          <span>⏱ ${p.waiting.label}</span>
+        </div>
+      </div>
+      <div class="rank-score">
+        <div class="num">${row.total.toFixed(0)}</div>
+        <div class="lbl">/ 100</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: full comparison table
+   ============================================================ */
+function srcTags(ids){
+  return ids.map(id=>{
+    const idx = SOURCES.findIndex(s=>s.id===id)+1;
+    return `<a href="#src-${id}" class="src-tag">[${idx}]</a>`;
+  }).join('');
+}
+
+function renderTable(){
+  const table = document.getElementById('compare-table');
+  const rows = [
+    {label:'Sample monthly premium', get:(p)=>`${p.premium.label}${p.premium.flagLabel?` <span class="flag">⚑ ${p.premium.flagLabel}</span>`:''}<br><span style="color:var(--ink-soft);font-weight:400;font-size:.78rem;">${p.premium.note||''}</span>`, src:(p)=>p.premium.src},
+    {label:'Deductible options', get:(p)=>`${p.deductible.label}${p.deductible.note?`<br><span style="color:var(--ink-soft);font-weight:400;font-size:.78rem;">${p.deductible.note}</span>`:''}`, src:(p)=>p.deductible.src},
+    {label:'Reimbursement %', get:(p)=>p.reimbursement.label, src:(p)=>p.reimbursement.src},
+    {label:'Annual / lifetime cap', get:(p)=>`${p.cap.label}${p.cap.note?`<br><span style="color:var(--ink-soft);font-weight:400;font-size:.78rem;">${p.cap.note}</span>`:''}`, src:(p)=>p.cap.src},
+    {label:'Chronic / hereditary coverage', get:(p)=>`${p.chronic.label}${p.chronic.estimate?' <span class="flag">⚑ Editorial scoring</span>':''}`, src:(p)=>p.chronic.src},
+    {label:'Waiting period', get:(p)=>p.waiting.label, src:(p)=>p.waiting.src},
+    {label:'Claim processing speed', get:(p)=>`${p.claimSpeedDays.label}${p.claimSpeedDays.estimate?' <span class="flag">⚑ Estimated</span>':''}`, src:(p)=>p.claimSpeedDays.src},
+    {label:'Customer satisfaction', get:(p)=>`${p.satisfaction.label}${p.satisfaction.estimate?' <span class="flag">⚑ Derived</span>':''}${p.satisfaction.note?`<br><span style="color:var(--ink-soft);font-weight:400;font-size:.78rem;">${p.satisfaction.note}</span>`:''}`, src:(p)=>p.satisfaction.src},
+  ];
+
+  let thead = '<thead><tr><th>Criterion</th>' + PROVIDERS.map(p=>`<th>${p.name}</th>`).join('') + '</tr></thead>';
+  let tbody = '<tbody>' + rows.map(r=>{
+    return '<tr><td class="crit">'+r.label+'</td>' + PROVIDERS.map(p=>{
+      return `<td>${r.get(p)} ${srcTags(r.src(p))}</td>`;
+    }).join('') + '</tr>';
+  }).join('') + '</tbody>';
+
+  table.innerHTML = thead + tbody;
+}
+
+/* ============================================================
+   RENDER: sources panel
+   ============================================================ */
+function renderSources(){
+  document.getElementById('src-count').textContent = SOURCES.length;
+  const list = document.getElementById('src-list');
+  list.innerHTML = SOURCES.map((s,i)=>`
+    <li id="src-${s.id}">
+      <div class="src-num">${i+1}</div>
+      <div>
+        <a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>
+        <span class="src-desc">${s.desc}</span>
+      </div>
+    </li>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER: methodology / "how this was researched" panel
+   ============================================================ */
+function renderResearch(){
+  document.getElementById('research-content').innerHTML = `
+    <h4>What went into each score</h4>
+    <p>Every raw figure in the comparison table — premiums, deductibles, reimbursement percentages, payout caps, waiting periods, BBB grades and Trustpilot scores — comes from a named, linked source (see the Sources panel). Each provider's four raw scores plus its qualitative and derived figures are converted to a 0–100 scale relative to the other three providers, then combined using the weights you set.</p>
+
+    <h4>Where estimates or judgment calls were required</h4>
+    <ul>
+      <li><strong>Claim processing speed:</strong> only Healthy Paws and ASPCA publish (or are cited with) a specific number of days. Trupanion's and Lemonade's day-counts are derived from qualitative descriptions ("as little as 24 hours via Direct Pay," "50% instant, remainder ~5 days") and are flagged <span class="flag">⚑ Estimated</span> in the table.</li>
+      <li><strong>Chronic/hereditary coverage score:</strong> no single source rates all four providers on a common numeric scale for this, so this tool assigned a comparative 0–100 score based on each provider's stated exclusions and carve-outs (e.g. Healthy Paws' age-6 hip dysplasia cutoff, Lemonade's permanent cruciate exclusion, ASPCA's permanent exclusion of incurable pre-existing conditions). This is flagged <span class="flag">⚑ Editorial scoring</span> as a synthetic judgment call, not a sourced number.</li>
+      <li><strong>Customer satisfaction score:</strong> combines each provider's BBB letter grade (converted to a number) and Trustpilot star rating in a 50/50 blend. This composite is flagged <span class="flag">⚑ Derived</span> since no single source publishes a unified satisfaction index across all four companies. We looked for a National Association of Insurance Commissioners (NAIC) Complaint Index value for each underwriter, as originally requested, but could not locate individually-citable, current per-company index figures for these four brands in public form — so BBB + Trustpilot was used instead, and this substitution is called out here rather than treated as equivalent.</li>
+      <li><strong>ASPCA's sample premium</strong> comes from a U.S. News roundup that reports one blended "Complete Coverage" figure, while Trupanion, Healthy Paws, and Lemonade each have separate dog/cat sample rates from a matching $250-deductible/90%-reimbursement/unlimited-cap methodology. That means ASPCA's premium isn't perfectly apples-to-apples with the other three — flagged <span class="flag">⚑ Different methodology</span> in the table.</li>
+    </ul>
+
+    <h4>Conflicts between sources, and how they were resolved</h4>
+    <ul>
+      <li>Trupanion's Trustpilot score varies by source and by date (values of 4.2, 4.3, 4.4 all appeared in reviewer sites published within the last few months). Rather than pick one, this tool averaged the reported range (≈4.3) and flagged it as an estimate.</li>
+      <li>Lemonade's deductible ceiling is reported as $500 by Bankrate but up to $750–$1,000 (state-dependent) by Petful. Both figures are shown in the table rather than silently picking one.</li>
+      <li>Healthy Paws' waiting period is consistently reported as 15 days for accidents and illness by Healthy Paws' own FAQ; one third-party site separately mentioned a 12-month orthopedic-specific waiting window, which could not be corroborated on Healthy Paws' own site during this research pass, so it was left out of the scored waiting-period figure to avoid over-stating an unverified number.</li>
+    </ul>
+
+    <h4>What this tool does not do</h4>
+    <p>It does not know your pet's breed, age, location, or health history — all of which materially change real quotes. Sample premiums shown here are illustrative averages from third-party methodology, not a quote for your pet. Treat the ranking as a starting shortlist, then get real quotes from your top 2–3 matches.</p>
+  `;
+}
+
+/* ============================================================
+   Collapsibles
+   ============================================================ */
+function initCollapsibles(){
+  document.querySelectorAll('.collapse-head').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      const panel = document.getElementById(head.dataset.target);
+      const body = panel.querySelector('.collapse-body');
+      const isOpen = panel.classList.contains('open');
+      if(isOpen){
+        body.style.maxHeight = null;
+        panel.classList.remove('open');
+      } else {
+        panel.classList.add('open');
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
+    });
+  });
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+function init(){
+  try{
+    computeAllScores();
+    renderSliders();
+    renderResults();
+    renderTable();
+    renderSources();
+    renderResearch();
+    initCollapsibles();
+
+    document.getElementById('btn-equal').addEventListener('click', ()=>{
+      CRITERIA.forEach(c=>{
+        weights[c.id]=5;
+        document.getElementById(`slider-${c.id}`).value=5;
+        document.getElementById(`val-${c.id}`).textContent=5;
+      });
+      renderResults();
+    });
+    document.getElementById('btn-zero').addEventListener('click', ()=>{
+      CRITERIA.forEach(c=>{
+        weights[c.id]=0;
+        document.getElementById(`slider-${c.id}`).value=0;
+        document.getElementById(`val-${c.id}`).textContent=0;
+      });
+      renderResults();
+    });
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='grid';
+  }catch(err){
+    document.getElementById('loading').innerHTML =
+      '<div style="text-align:center;color:var(--bad);"><strong>Something went wrong loading the comparison.</strong><br><span style="font-size:.8rem;">'+(err && err.message ? err.message : 'Unknown error')+'</span></div>';
+    console.error(err);
+  }
+}
+
+// Simulate a brief, honest loading state before rendering (data is local/static, but this keeps the UI pattern consistent for future async data sources)
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(init, 250);
+});
+</script>
+</body>
+</html>
