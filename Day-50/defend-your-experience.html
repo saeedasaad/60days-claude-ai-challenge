@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defend Your Experience — Case File</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root{
+  --bg-void:#0a0b08;
+  --bg-panel:#14160f;
+  --bg-card:#1c1e14;
+  --bg-card-hover:#22241a;
+  --line:#3a3d2c;
+  --line-soft:#26281c;
+  --lamp:#f2a93c;
+  --lamp-dim:#7a5a24;
+  --lamp-glow:rgba(242,169,60,0.14);
+  --cold:#5ec8c0;
+  --cold-dim:#2f5a56;
+  --paper:#e8e2cf;
+  --paper-dim:#9a9686;
+  --paper-faint:#615d4d;
+  --danger:#c1443a;
+  --danger-dim:#4a2420;
+  --good:#8ba362;
+  --good-dim:#2f3a22;
+  --radius:3px;
+  --font-display:'Oswald', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg-void);
+  color:var(--paper);
+  font-family:var(--font-mono);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* film grain / scanline overlay */
+body::before{
+  content:'';
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:9999;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 2px);
+  mix-blend-mode:overlay;
+}
+body::after{
+  content:'';
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:9998;
+  background:radial-gradient(ellipse at 50% 0%, transparent 40%, rgba(0,0,0,0.55) 100%);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg-panel);}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;}
+::-webkit-scrollbar-thumb:hover{background:var(--lamp-dim);}
+
+button{font-family:var(--font-mono);cursor:pointer;}
+textarea,input{font-family:var(--font-mono);}
+
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--paper-faint);
+}
+
+.stamp{
+  display:inline-block;
+  font-family:var(--font-display);
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border:2px solid currentColor;
+  border-radius:2px;
+  transform:rotate(-3deg);
+  font-size:11px;
+}
+.stamp.weak{color:var(--danger);}
+.stamp.strong{color:var(--good);}
+.stamp.pending{color:var(--paper-dim);}
+
+/* ============ APP SHELL ============ */
+#app{position:relative;z-index:1;min-height:100vh;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ============ LANDING / CASE COVER ============ */
+#screen-landing{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:24px;
+}
+.folder{
+  width:100%;
+  max-width:640px;
+  background:linear-gradient(180deg, var(--bg-panel), var(--bg-card));
+  border:1px solid var(--line);
+  border-radius:2px;
+  box-shadow:0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.4);
+  padding:48px 44px;
+  position:relative;
+  animation:folderIn 0.7s ease both;
+}
+@keyframes folderIn{
+  from{opacity:0; transform:translateY(16px);}
+  to{opacity:1; transform:translateY(0);}
+}
+.folder::before{
+  content:'';
+  position:absolute;
+  top:-10px; left:36px;
+  width:120px; height:20px;
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-radius:4px 4px 0 0;
+}
+.folder-tab{
+  position:absolute; top:-9px; left:44px;
+  font-size:10px; letter-spacing:0.12em;
+  color:var(--paper-faint);
+  text-transform:uppercase;
+  z-index:2;
+}
+.case-number{
+  font-size:11px; color:var(--paper-faint); letter-spacing:0.1em; margin-bottom:18px;
+}
+.case-title{
+  font-family:var(--font-display);
+  font-size:42px;
+  font-weight:700;
+  letter-spacing:0.01em;
+  line-height:1.05;
+  color:var(--paper);
+  margin:0 0 8px;
+}
+.case-title span{color:var(--lamp);}
+.case-sub{
+  color:var(--paper-dim);
+  font-size:14px;
+  line-height:1.6;
+  max-width:52ch;
+  margin-bottom:32px;
+}
+.dropzone{
+  border:1.5px dashed var(--line);
+  border-radius:2px;
+  padding:36px 24px;
+  text-align:center;
+  transition:border-color 0.2s, background 0.2s;
+  cursor:pointer;
+  position:relative;
+}
+.dropzone:hover, .dropzone.dragover{
+  border-color:var(--lamp-dim);
+  background:var(--lamp-glow);
+}
+.dropzone-icon{
+  font-size:28px;
+  margin-bottom:10px;
+  color:var(--lamp-dim);
+}
+.dropzone-text{font-size:13px; color:var(--paper-dim);}
+.dropzone-text b{color:var(--paper);font-weight:600;}
+.dropzone input[type=file]{display:none;}
+
+.or-divider{
+  display:flex;align-items:center;gap:12px;margin:20px 0;
+  color:var(--paper-faint); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--line);}
+
+textarea#pasteArea{
+  width:100%;
+  min-height:110px;
+  background:var(--bg-void);
+  border:1px solid var(--line);
+  border-radius:2px;
+  color:var(--paper);
+  padding:12px 14px;
+  font-size:13px;
+  line-height:1.6;
+  resize:vertical;
+}
+textarea#pasteArea:focus{outline:none;border-color:var(--lamp-dim);}
+textarea#pasteArea::placeholder{color:var(--paper-faint);}
+
+.file-chip{
+  display:none;
+  align-items:center;
+  gap:10px;
+  background:var(--bg-void);
+  border:1px solid var(--line);
+  padding:10px 14px;
+  border-radius:2px;
+  font-size:12px;
+  color:var(--paper-dim);
+  margin-top:14px;
+}
+.file-chip.show{display:flex;}
+.file-chip .x{margin-left:auto;color:var(--danger);cursor:pointer;font-weight:700;}
+
+.btn{
+  font-family:var(--font-display);
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  font-size:13px;
+  padding:14px 28px;
+  border-radius:2px;
+  border:1px solid transparent;
+  transition:all 0.15s;
+}
+.btn-primary{
+  background:var(--lamp);
+  color:#1a1300;
+  border-color:var(--lamp);
+  width:100%;
+  margin-top:24px;
+}
+.btn-primary:hover:not(:disabled){background:#ffbb55; box-shadow:0 0 24px var(--lamp-glow);}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-ghost{
+  background:transparent;
+  color:var(--paper-dim);
+  border-color:var(--line);
+}
+.btn-ghost:hover{color:var(--paper);border-color:var(--paper-dim);}
+.btn-small{padding:8px 16px;font-size:11px;}
+
+.history-link{
+  margin-top:18px; text-align:center;
+  font-size:11px; color:var(--paper-faint); letter-spacing:0.06em;text-transform:uppercase;
+  text-decoration:underline; cursor:pointer;
+}
+.history-link:hover{color:var(--cold);}
+
+/* ============ LOADING (EXTRACTING) ============ */
+#screen-loading{
+  display:flex; align-items:center; justify-content:center; min-height:100vh; flex-direction:column; gap:20px;
+}
+.lamp-swing{
+  width:2px; height:80px; background:linear-gradient(var(--line),transparent);
+  position:relative; transform-origin:top center;
+  animation:swing 2.4s ease-in-out infinite;
+}
+@keyframes swing{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}}
+.lamp-bulb{
+  position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
+  width:20px;height:20px;border-radius:50%;
+  background:var(--lamp);
+  box-shadow:0 0 40px 20px var(--lamp-glow), 0 0 8px var(--lamp);
+  animation:flicker 3s infinite;
+}
+@keyframes flicker{0%,100%{opacity:1;}92%{opacity:1;}93%{opacity:0.7;}94%{opacity:1;}96%{opacity:0.85;}97%{opacity:1;}}
+.loading-text{font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--paper-dim);}
+.loading-text .dots::after{content:'';animation:dots 1.4s steps(4,end) infinite;}
+@keyframes dots{0%{content:'';}25%{content:'.';}50%{content:'..';}75%{content:'...';}}
+
+/* ============ BOARD (CORKBOARD OF CLAIMS) ============ */
+#screen-board{padding:28px 20px 80px;max-width:1180px;margin:0 auto;}
+.board-header{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  flex-wrap:wrap; gap:16px;
+  margin-bottom:28px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:20px;
+}
+.board-title{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--paper);margin:0;}
+.board-title .lamp-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lamp);box-shadow:0 0 12px var(--lamp);margin-right:10px;vertical-align:middle;}
+.board-meta{font-size:11px;color:var(--paper-faint);letter-spacing:0.06em;text-transform:uppercase;}
+
+.corkboard{
+  position:relative;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 40%),
+    var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:2px;
+  padding:28px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:22px;
+}
+.claim-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-top:3px solid var(--paper-faint);
+  padding:16px 16px 14px;
+  border-radius:1px;
+  position:relative;
+  transform:rotate(var(--tilt, 0deg));
+  transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  cursor:default;
+  box-shadow:2px 4px 10px rgba(0,0,0,0.35);
+}
+.claim-card:hover{transform:rotate(0deg) translateY(-2px);box-shadow:2px 8px 18px rgba(0,0,0,0.5);}
+.claim-card::before{
+  content:'';
+  position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+  width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #e8817a, #8a2b26);
+  box-shadow:0 2px 4px rgba(0,0,0,0.5);
+}
+.claim-card.unexamined{border-top-color:var(--paper-faint);}
+.claim-card.examining{border-top-color:var(--lamp);}
+.claim-card.strong{border-top-color:var(--good);}
+.claim-card.weak{border-top-color:var(--danger);}
+
+.claim-cat{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--paper-faint);margin-bottom:8px;}
+.claim-text{font-size:12.5px;line-height:1.55;color:var(--paper);min-height:44px;}
+.claim-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+.claim-conf{font-size:10px;color:var(--paper-dim);}
+.claim-conf b{color:var(--paper);}
+
+.board-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;}
+.board-actions .btn-primary{width:auto;flex:1;min-width:220px;margin-top:0;}
+
+/* ============ INTERROGATION ROOM ============ */
+#screen-interview{
+  display:flex; min-height:100vh;
+}
+.spotlight-cone{
+  position:fixed; top:-200px; left:50%; transform:translateX(-50%);
+  width:900px; height:500px;
+  background:radial-gradient(ellipse at 50% 0%, var(--lamp-glow), transparent 65%);
+  pointer-events:none; z-index:0;
+}
+.interview-main{
+  flex:1; display:flex; flex-direction:column;
+  max-width:760px; margin:0 auto; padding:24px 24px 140px;
+  position:relative; z-index:1;
+}
+.interview-topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:linear-gradient(var(--bg-void) 85%, transparent); z-index:5; padding-top:8px;
+}
+.progress-track{flex:1;height:3px;background:var(--line);margin:0 20px;border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--lamp);width:0%;transition:width 0.5s;box-shadow:0 0 8px var(--lamp);}
+.exit-link{font-size:11px;color:var(--paper-faint);text-transform:uppercase;letter-spacing:0.06em;}
+.exit-link:hover{color:var(--danger);cursor:pointer;}
+
+.transcript{display:flex;flex-direction:column;gap:18px;}
+.msg{max-width:88%;animation:msgIn 0.35s ease both;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg-interrogator{align-self:flex-start;}
+.msg-subject{align-self:flex-end;}
+.msg-label{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--paper-faint);margin-bottom:6px;}
+.msg-interrogator .msg-label{color:var(--lamp-dim);}
+.msg-subject .msg-label{color:var(--cold-dim);text-align:right;}
+.msg-bubble{
+  padding:13px 16px;border-radius:2px;font-size:13.5px;line-height:1.6;
+  border:1px solid var(--line);
+}
+.msg-interrogator .msg-bubble{background:var(--bg-panel);border-left:3px solid var(--lamp-dim);}
+.msg-subject .msg-bubble{background:var(--bg-card);border-right:3px solid var(--cold-dim);text-align:left;}
+.msg-tag{display:inline-block;margin-top:8px;}
+
+.typing-indicator{display:flex;gap:4px;padding:13px 16px;}
+.typing-indicator span{width:6px;height:6px;background:var(--lamp-dim);border-radius:50%;animation:typingBounce 1.2s infinite;}
+.typing-indicator span:nth-child(2){animation-delay:0.15s;}
+.typing-indicator span:nth-child(3){animation-delay:0.3s;}
+@keyframes typingBounce{0%,60%,100%{opacity:0.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-3px);}}
+
+.answer-dock{
+  position:fixed; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent, var(--bg-void) 30%);
+  padding:24px 24px 28px;
+  z-index:6;
+}
+.answer-inner{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:flex-end;}
+textarea#answerInput{
+  flex:1; background:var(--bg-panel); border:1px solid var(--line);
+  color:var(--paper); padding:14px 16px; border-radius:2px; font-size:13.5px;
+  min-height:52px; max-height:180px; line-height:1.5; resize:none;
+}
+textarea#answerInput:focus{outline:none;border-color:var(--lamp-dim);}
+#sendAnswer{
+  font-family:var(--font-display);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+  background:var(--lamp); color:#1a1300; border:none; padding:0 22px; height:52px; border-radius:2px; font-size:12px;
+  flex-shrink:0;
+}
+#sendAnswer:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* side dossier panel */
+.dossier-panel{
+  width:280px; flex-shrink:0; border-left:1px solid var(--line);
+  padding:24px 20px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  z-index:1;
+}
+.dossier-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--paper-faint);margin-bottom:14px;}
+.dossier-claim{
+  padding:10px 12px; border:1px solid var(--line-soft); border-radius:2px; margin-bottom:10px;
+  font-size:11.5px; line-height:1.5; transition:border-color 0.3s, background 0.3s;
+}
+.dossier-claim.active{border-color:var(--lamp); background:var(--lamp-glow);}
+.dossier-claim.strong{border-left:3px solid var(--good);}
+.dossier-claim.weak{border-left:3px solid var(--danger);}
+.dossier-claim-text{color:var(--paper-dim);margin-bottom:6px;}
+.meter{height:4px;background:var(--line-soft);border-radius:2px;overflow:hidden;}
+.meter-fill{height:100%;transition:width 0.6s ease, background 0.6s;}
+
+.rate-banner{
+  background:var(--danger-dim); border:1px solid var(--danger); color:var(--paper);
+  padding:10px 14px; font-size:12px; border-radius:2px; margin-bottom:14px; display:none;
+}
+.rate-banner.show{display:block;}
+
+/* ============ REPORT ============ */
+#screen-report{padding:40px 20px 100px;max-width:900px;margin:0 auto;}
+.report-head{text-align:center;margin-bottom:40px;}
+.report-stamp{
+  display:inline-block;font-family:var(--font-display);font-weight:700;font-size:13px;
+  letter-spacing:0.15em;text-transform:uppercase;border:2px solid var(--good);color:var(--good);
+  padding:6px 18px;transform:rotate(-2deg);margin-bottom:18px;
+}
+.report-title{font-family:var(--font-display);font-size:34px;font-weight:700;margin:0 0 10px;}
+.readiness-score{font-size:64px;font-family:var(--font-display);font-weight:700;color:var(--lamp);line-height:1;margin:20px 0 4px;}
+.readiness-label{font-size:12px;color:var(--paper-dim);letter-spacing:0.08em;text-transform:uppercase;}
+
+.report-section{margin-bottom:36px;}
+.report-section h3{
+  font-family:var(--font-display);font-size:16px;letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--paper); border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:16px;
+}
+.report-item{
+  background:var(--bg-panel);border:1px solid var(--line);border-radius:2px;padding:16px;margin-bottom:12px;
+}
+.report-item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+.report-item-claim{font-size:13px;color:var(--paper);line-height:1.5;flex:1;}
+.report-item-feedback{font-size:12.5px;color:var(--paper-dim);line-height:1.6;}
+
+.report-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px;}
+.report-actions .btn{flex:1;min-width:200px;}
+
+/* history modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--bg-panel);border:1px solid var(--line);border-radius:2px;
+  max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:28px;
+}
+.modal-box h3{font-family:var(--font-display);margin-top:0;}
+.session-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 14px;border:1px solid var(--line-soft);border-radius:2px;margin-bottom:10px;font-size:12px;
+}
+.session-item:hover{border-color:var(--lamp-dim);cursor:pointer;background:var(--bg-card);}
+.empty-state{text-align:center;padding:30px;color:var(--paper-faint);font-size:12px;}
+
+@media (max-width:900px){
+  .dossier-panel{display:none;}
+  .interview-main{max-width:100%;}
+}
+@media (max-width:560px){
+  .folder{padding:32px 22px;}
+  .case-title{font-size:32px;}
+  .board-header{flex-direction:column;align-items:flex-start;}
+}
+
+:focus-visible{outline:2px solid var(--cold);outline-offset:2px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ LANDING ============ -->
+  <div class="screen active" id="screen-landing">
+    <div class="folder">
+      <div class="folder-tab">Personnel Intake</div>
+      <div class="case-number" id="caseNumber">CASE FILE NO. ------</div>
+      <h1 class="case-title">Defend Your <span>Experience</span></h1>
+      <p class="case-sub">Every line on your resume is a claim. Upload it, and I'll cross-examine each one — the way a sharp hiring manager will — until you can defend all of it without flinching.</p>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">&#9670;</div>
+        <div class="dropzone-text"><b>Drop your resume</b> here, or click to browse<br>.txt / .md preferred &middot; PDF &amp; DOCX supported</div>
+        <input type="file" id="fileInput" accept=".txt,.md,.pdf,.docx">
+      </div>
+      <div class="file-chip" id="fileChip"><span id="fileChipName"></span><span class="x" id="fileChipRemove">&times;</span></div>
+
+      <div class="or-divider">or paste it directly</div>
+      <textarea id="pasteArea" placeholder="Paste your resume, LinkedIn About section, project write-up, or bio here..."></textarea>
+
+      <button class="btn btn-primary" id="beginBtn" disabled>Open the case</button>
+      <div class="history-link" id="historyLink">View past interrogations</div>
+    </div>
+  </div>
+
+  <!-- ============ LOADING ============ -->
+  <div class="screen" id="screen-loading">
+    <div class="lamp-swing"><div class="lamp-bulb"></div></div>
+    <div class="loading-text" id="loadingText">Reading the file<span class="dots"></span></div>
+  </div>
+
+  <!-- ============ BOARD ============ -->
+  <div class="screen" id="screen-board">
+    <div class="board-header">
+      <div>
+        <h2 class="board-title"><span class="lamp-dot"></span>Claims on the Board</h2>
+        <div class="board-meta" id="boardMeta">-- claims extracted &middot; ready for interrogation</div>
+      </div>
+      <button class="btn btn-ghost btn-small" id="backToLanding">&larr; Start over</button>
+    </div>
+    <div class="corkboard" id="corkboard"></div>
+    <div class="board-actions">
+      <button class="btn btn-primary" id="startInterrogation">Begin interrogation &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ============ INTERVIEW ============ -->
+  <div class="screen" id="screen-interview">
+    <div class="spotlight-cone"></div>
+    <div class="interview-main">
+      <div class="interview-topbar">
+        <span class="eyebrow" id="interviewPhase">Round 1</span>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="exit-link" id="exitInterview">End &amp; get report</span>
+      </div>
+      <div class="rate-banner" id="rateBanner">Signal jammed — the line dropped. Retrying...</div>
+      <div class="transcript" id="transcript"></div>
+      <div class="answer-dock">
+        <div class="answer-inner">
+          <textarea id="answerInput" placeholder="Type your answer... (Enter to send, Shift+Enter for new line)" rows="1"></textarea>
+          <button id="sendAnswer">Answer</button>
+        </div>
+      </div>
+    </div>
+    <div class="dossier-panel">
+      <div class="dossier-title">Case Board</div>
+      <div id="dossierClaims"></div>
+    </div>
+  </div>
+
+  <!-- ============ REPORT ============ -->
+  <div class="screen" id="screen-report">
+    <div class="report-head">
+      <div class="report-stamp">Case Closed</div>
+      <h1 class="report-title">Your Defense Report</h1>
+      <div class="readiness-score" id="readinessScore">--</div>
+      <div class="readiness-label">Interview readiness score</div>
+    </div>
+
+    <div class="report-section">
+      <h3>Well Defended</h3>
+      <div id="reportStrong"></div>
+    </div>
+    <div class="report-section">
+      <h3>Needs Work Before the Real Thing</h3>
+      <div id="reportWeak"></div>
+    </div>
+    <div class="report-section">
+      <h3>Recommendations</h3>
+      <div id="reportRecs" class="report-item"></div>
+    </div>
+
+    <div class="report-actions">
+      <button class="btn btn-primary" id="downloadReport">Download report</button>
+      <button class="btn btn-ghost" id="newSession">Start a new interrogation</button>
+    </div>
+  </div>
+
+  <!-- ============ HISTORY MODAL ============ -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-box">
+      <h3>Past Interrogations</h3>
+      <div id="historyList"></div>
+      <button class="btn btn-ghost btn-small" id="closeHistory" style="margin-top:14px;width:100%;">Close</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- STATE ----------
+  let state = {
+    resumeText: "",
+    claims: [],       // {id, text, category, status, confidence, exchanges:[{q,a,tag}]}
+    transcriptMsgs: [],  // for rendering {role:'interrogator'|'subject', text, tag}
+    apiHistory: [],   // raw message history sent to API {role, content}
+    currentClaimId: null,
+    turnCount: 0,
+    maxTurns: 10,
+    sessionId: null,
+    createdAt: null,
+    report: null
+  };
+
+  const MODEL = "claude-sonnet-4-6";
+  const API_URL = "https://api.anthropic.com/v1/messages";
+
+  // ---------- UTIL ----------
+  function $(sel){ return document.querySelector(sel); }
+  function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function show(screenId){
+    $all('.screen').forEach(s=>s.classList.remove('active'));
+    $('#'+screenId).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+  function randTilt(){ return (Math.random()*4-2).toFixed(1)+'deg'; }
+
+  function genCaseNumber(){
+    const n = Math.floor(1000+Math.random()*8999);
+    $('#caseNumber').textContent = 'CASE FILE NO. DYX-'+n;
+  }
+  genCaseNumber();
+
+  function stripFences(text){
+    let t = text.trim();
+    t = t.replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'');
+    return t.trim();
+  }
+
+  async function callClaude(messages, systemPrompt, retries){
+    retries = retries === undefined ? 2 : retries;
+    try{
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 1200,
+          system: systemPrompt,
+          messages: messages
+        })
+      });
+      if(res.status === 429 && retries > 0){
+        showRateBanner(true);
+        await new Promise(r=>setTimeout(r, (3-retries)*1500 + 1200));
+        return callClaude(messages, systemPrompt, retries-1);
+      }
+      if(!res.ok){
+        throw new Error("API error "+res.status);
+      }
+      showRateBanner(false);
+      const data = await res.json();
+      const textBlocks = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text);
+      return textBlocks.join('\n');
+    }catch(err){
+      if(retries > 0){
+        showRateBanner(true);
+        await new Promise(r=>setTimeout(r, 1500));
+        return callClaude(messages, systemPrompt, retries-1);
+      }
+      showRateBanner(false);
+      throw err;
+    }
+  }
+
+  function showRateBanner(on){
+    const b = $('#rateBanner');
+    if(!b) return;
+    if(on) b.classList.add('show'); else b.classList.remove('show');
+  }
+
+  function safeParseJSON(raw){
+    const cleaned = stripFences(raw);
+    try{ return JSON.parse(cleaned); }
+    catch(e){
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if(match){
+        try{ return JSON.parse(match[0]); }catch(e2){}
+      }
+      const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+      if(arrMatch){
+        try{ return JSON.parse(arrMatch[0]); }catch(e3){}
+      }
+      return null;
+    }
+  }
+
+  // ---------- LOCAL STORAGE / SESSIONS ----------
+  const STORE_KEY = "dye_sessions_v1";
+  function loadSessions(){
+    try{ return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }catch(e){ return []; }
+  }
+  function saveSessions(list){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function persistCurrentSession(){
+    const sessions = loadSessions();
+    const record = {
+      id: state.sessionId,
+      createdAt: state.createdAt,
+      resumePreview: state.resumeText.slice(0,140),
+      claims: state.claims,
+      transcriptMsgs: state.transcriptMsgs,
+      report: state.report
+    };
+    const idx = sessions.findIndex(s=>s.id === state.sessionId);
+    if(idx>=0) sessions[idx] = record; else sessions.unshift(record);
+    saveSessions(sessions.slice(0,20));
+  }
+
+  // ---------- FILE HANDLING ----------
+  const dropzone = $('#dropzone');
+  const fileInput = $('#fileInput');
+  const pasteArea = $('#pasteArea');
+  const beginBtn = $('#beginBtn');
+  const fileChip = $('#fileChip');
+  const fileChipName = $('#fileChipName');
+
+  dropzone.addEventListener('click', ()=>fileInput.click());
+  dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e=>{
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e=>{
+    if(e.target.files.length) handleFile(e.target.files[0]);
+  });
+  $('#fileChipRemove').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    state.resumeText = "";
+    fileChip.classList.remove('show');
+    fileInput.value = "";
+    updateBeginBtn();
+  });
+
+  async function loadScript(src){
+    return new Promise((resolve,reject)=>{
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function handleFile(file){
+    fileChipName.textContent = file.name + " — extracting...";
+    fileChip.classList.add('show');
+    let text = "";
+    try{
+      if(file.name.toLowerCase().endsWith('.pdf')){
+        text = await extractPdf(file);
+      } else if(file.name.toLowerCase().endsWith('.docx')){
+        text = await extractDocx(file);
+      } else {
+        text = await file.text();
+      }
+    }catch(err){
+      fileChipName.textContent = file.name + " — couldn't auto-read this format, please paste text below instead";
+      updateBeginBtn();
+      return;
+    }
+    state.resumeText = text.trim();
+    fileChipName.textContent = file.name + " — " + text.trim().split(/\s+/).length + " words extracted";
+    updateBeginBtn();
+  }
+
+  async function extractPdf(file){
+    if(!window.pdfjsLib){
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+    const buf = await file.arrayBuffer();
+    const pdf = await window.pdfjsLib.getDocument({data:buf}).promise;
+    let out = "";
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      out += content.items.map(it=>it.str).join(" ") + "\n";
+    }
+    return out;
+  }
+
+  async function extractDocx(file){
+    if(!window.mammoth){
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
+    }
+    const buf = await file.arrayBuffer();
+    const result = await window.mammoth.extractRawText({arrayBuffer:buf});
+    return result.value;
+  }
+
+  pasteArea.addEventListener('input', ()=>{
+    if(pasteArea.value.trim().length > 0){
+      state.resumeText = pasteArea.value;
+    }
+    updateBeginBtn();
+  });
+
+  function updateBeginBtn(){
+    const hasContent = (state.resumeText && state.resumeText.trim().length > 20) || pasteArea.value.trim().length > 20;
+    beginBtn.disabled = !hasContent;
+  }
+
+  beginBtn.addEventListener('click', async ()=>{
+    if(pasteArea.value.trim().length > 20){
+      state.resumeText = pasteArea.value.trim();
+    }
+    state.sessionId = uid();
+    state.createdAt = new Date().toISOString();
+    show('screen-loading');
+    await extractClaims();
+  });
+
+  // ---------- CLAIM EXTRACTION ----------
+  async function extractClaims(){
+    const sys = `You are an intelligence analyst preparing a dossier before an interrogation. Given a person's resume/bio/project text, extract every meaningful, checkable CLAIM they make about themselves — achievements, skills, responsibilities, metrics, leadership moments, technical decisions. Ignore pure contact info/formatting.
+
+For each claim output an object:
+{
+  "id": short slug string,
+  "text": the claim restated in one crisp sentence (their words condensed, not copied verbatim),
+  "category": one of "Impact/Metric","Technical","Leadership","Ownership","Vague/Unsupported","Soft Skill",
+  "risk": "low"|"medium"|"high"  (high = vague, unverifiable, no evidence, buzzwordy; low = specific, quantified, clearly evidenced)
+}
+
+Extract between 6 and 14 claims — prioritize the most interview-relevant and highest-risk ones if there are many. Return ONLY a raw JSON array, nothing else, no markdown fences.`;
+
+    const userMsg = "RESUME/EXPERIENCE TEXT:\n\n" + state.resumeText.slice(0, 12000);
+    $('#loadingText').innerHTML = 'Reading the file<span class="dots"></span>';
+    try{
+      const raw = await callClaude([{role:"user", content: userMsg}], sys);
+      $('#loadingText').innerHTML = 'Pinning claims to the board<span class="dots"></span>';
+      const parsed = safeParseJSON(raw);
+      let claims = Array.isArray(parsed) ? parsed : [];
+      if(claims.length === 0){
+        claims = [{id:"general", text:"Overall experience as described", category:"Vague/Unsupported", risk:"medium"}];
+      }
+      state.claims = claims.map(c=>({
+        id: c.id || uid(),
+        text: c.text || "Unspecified claim",
+        category: c.category || "Vague/Unsupported",
+        status: "unexamined",
+        confidence: c.risk === "high" ? 25 : c.risk === "low" ? 55 : 40,
+        exchanges: []
+      }));
+      renderBoard();
+      show('screen-board');
+    }catch(err){
+      alert("The line went dead reaching the analyst desk. Please check your connection and try again.");
+      show('screen-landing');
+    }
+  }
+
+  // ---------- BOARD RENDER ----------
+  function renderBoard(){
+    const board = $('#corkboard');
+    board.innerHTML = "";
+    state.claims.forEach(c=>{
+      const div = document.createElement('div');
+      div.className = 'claim-card ' + c.status;
+      div.style.setProperty('--tilt', randTilt());
+      div.innerHTML = `
+        <div class="claim-cat">${escapeHtml(c.category)}</div>
+        <div class="claim-text">${escapeHtml(c.text)}</div>
+        <div class="claim-footer">
+          <span class="claim-conf">Confidence <b>${c.confidence}%</b></span>
+          <span class="stamp ${c.status==='strong'?'strong':c.status==='weak'?'weak':'pending'}">${c.status==='unexamined'?'Unexamined':c.status==='examining'?'Under Review':c.status}</span>
+        </div>`;
+      board.appendChild(div);
+    });
+    $('#boardMeta').textContent = state.claims.length + " claims extracted \u00b7 ready for interrogation";
+  }
+
+  $('#backToLanding').addEventListener('click', ()=>{
+    if(confirm("Start over? Your extracted claims for this session will be lost.")){
+      show('screen-landing');
+    }
+  });
+
+  $('#historyLink').addEventListener('click', ()=>{
+    renderHistory();
+    $('#historyModal').classList.add('show');
+  });
+  $('#closeHistory').addEventListener('click', ()=> $('#historyModal').classList.remove('show'));
+
+  function renderHistory(){
+    const list = $('#historyList');
+    const sessions = loadSessions();
+    if(sessions.length === 0){
+      list.innerHTML = '<div class="empty-state">No past interrogations yet. Once you finish a case, it\'ll be filed here.</div>';
+      return;
+    }
+    list.innerHTML = "";
+    sessions.forEach(s=>{
+      const div = document.createElement('div');
+      div.className = 'session-item';
+      const date = new Date(s.createdAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+      const score = s.report ? s.report.readiness_score+"%" : "in progress";
+      div.innerHTML = `<span>${escapeHtml(s.resumePreview.slice(0,50))}...</span><span class="stamp pending">${date} \u00b7 ${score}</span>`;
+      div.addEventListener('click', ()=>{
+        loadSession(s);
+        $('#historyModal').classList.remove('show');
+      });
+      list.appendChild(div);
+    });
+  }
+
+  function loadSession(s){
+    state.sessionId = s.id;
+    state.createdAt = s.createdAt;
+    state.claims = s.claims;
+    state.transcriptMsgs = s.transcriptMsgs || [];
+    state.report = s.report;
+    if(s.report){
+      renderReport();
+      show('screen-report');
+    } else {
+      renderBoard();
+      show('screen-board');
+    }
+  }
+
+  // ---------- INTERROGATION ----------
+  $('#startInterrogation').addEventListener('click', ()=>{
+    show('screen-interview');
+    renderDossierPanel();
+    if(state.apiHistory.length === 0){
+      askNextQuestion(true);
+    }
+  });
+
+  function claimById(id){ return state.claims.find(c=>c.id===id); }
+
+  function buildClaimsSnapshot(){
+    return state.claims.map(c=>({
+      id:c.id, text:c.text, category:c.category, status:c.status, confidence:c.confidence
+    }));
+  }
+
+  const INTERVIEWER_SYS = `You are a sharp, skeptical technical hiring manager conducting a live interrogation-style mock interview. You have a dossier of CLAIMS extracted from the candidate's resume (provided each turn as JSON). Your job:
+
+1. Pick ONE claim to probe next — prioritize "unexamined" and low-confidence/high-risk ones, but don't ignore strong ones entirely (verify they're not overstated).
+2. Ask a sharp, SPECIFIC follow-up question that references details from the claim itself. Avoid generic interview-template questions ("tell me about a challenge") — anchor tightly to what THEY claimed.
+3. If this isn't the first question, first evaluate their PREVIOUS answer (given in conversation) for specificity, evidence, ownership, and consistency. Vague, deflecting, or unverifiable answers should lower confidence; concrete, metric-backed, specific answers should raise it.
+4. Escalate naturally: if an answer was weak, drill deeper on the same claim before moving on. If strong, move to a new claim.
+5. After roughly 8-10 solid exchanges covering the highest-risk claims, set "recommend_end": true.
+
+Respond ONLY with raw JSON, no markdown fences, in this exact shape:
+{
+  "message": "the question or follow-up you say aloud, 1-3 sentences, direct and human, not robotic",
+  "target_claim_id": "id of the claim this question targets",
+  "previous_claim_id": "id of claim the PREVIOUS answer was about, or null if this is the first question",
+  "confidence_update": <integer -25 to +25, delta to apply to previous_claim_id's confidence based on how well they answered, 0 if first question>,
+  "eval_tag": "strong"|"moderate"|"weak"|null,
+  "eval_note": "one short clause on why (or null if first question)",
+  "recommend_end": false
+}`;
+
+  async function askNextQuestion(isFirst){
+    renderTypingIndicator(true);
+    const snapshot = buildClaimsSnapshot();
+    const contextMsg = `CURRENT CLAIMS DOSSIER:\n${JSON.stringify(snapshot)}\n\n${isFirst ? "This is the first question of the interview. Open strong — pick the highest-risk or most impressive claim to start with." : "Continue the interrogation based on the conversation so far."}`;
+
+    state.apiHistory.push({role:"user", content: contextMsg});
+    try{
+      const raw = await callClaude(state.apiHistory, INTERVIEWER_SYS);
+      state.apiHistory.push({role:"assistant", content: raw});
+      const parsed = safeParseJSON(raw);
+      renderTypingIndicator(false);
+      if(!parsed){ throw new Error("bad json"); }
+      applyModelTurn(parsed);
+    }catch(err){
+      renderTypingIndicator(false);
+      addMsg('interrogator', "The line's noisy — let's try that again. Go ahead and answer the last question, or tell me a bit more about your experience.");
+    }
+  }
+
+  function applyModelTurn(parsed){
+    // apply evaluation of previous answer
+    if(parsed.previous_claim_id){
+      const pc = claimById(parsed.previous_claim_id);
+      if(pc && typeof parsed.confidence_update === 'number'){
+        pc.confidence = Math.max(5, Math.min(95, pc.confidence + parsed.confidence_update));
+        pc.status = pc.confidence >= 65 ? 'strong' : pc.confidence <= 35 ? 'weak' : 'examining';
+        if(parsed.eval_note){
+          pc.exchanges.push({tag:parsed.eval_tag, note:parsed.eval_note});
+        }
+        // attach tag to last subject message
+        const lastSubjectMsg = [...state.transcriptMsgs].reverse().find(m=>m.role==='subject' && !m.tag);
+        if(lastSubjectMsg) lastSubjectMsg.tag = parsed.eval_tag;
+      }
+    }
+    if(parsed.target_claim_id){
+      const tc = claimById(parsed.target_claim_id);
+      if(tc && tc.status === 'unexamined') tc.status = 'examining';
+      state.currentClaimId = parsed.target_claim_id;
+    }
+    addMsg('interrogator', parsed.message);
+    renderDossierPanel();
+    renderTranscript();
+    updateProgress();
+
+    state.turnCount++;
+    if(parsed.recommend_end || state.turnCount >= state.maxTurns){
+      setTimeout(()=>{
+        addMsg('interrogator', "That's enough for this round. Let me compile your defense report.");
+        renderTranscript();
+        setTimeout(finishInterview, 900);
+      }, 500);
+    }
+  }
+
+  function addMsg(role, text, tag){
+    state.transcriptMsgs.push({role, text, tag: tag||null});
+  }
+
+  function renderTranscript(){
+    const t = $('#transcript');
+    t.innerHTML = "";
+    state.transcriptMsgs.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role === 'interrogator' ? 'msg-interrogator' : 'msg-subject');
+      let tagHtml = "";
+      if(m.tag){
+        tagHtml = `<div class="msg-tag"><span class="stamp ${m.tag==='strong'?'strong':m.tag==='weak'?'weak':'pending'}">${m.tag}</span></div>`;
+      }
+      div.innerHTML = `<div class="msg-label">${m.role==='interrogator'?'Interrogator':'You'}</div><div class="msg-bubble">${escapeHtml(m.text)}${tagHtml}</div>`;
+      t.appendChild(div);
+    });
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function renderTypingIndicator(on){
+    let el = document.getElementById('typingRow');
+    if(on){
+      if(el) return;
+      el = document.createElement('div');
+      el.id = 'typingRow';
+      el.className = 'msg msg-interrogator';
+      el.innerHTML = `<div class="msg-label">Interrogator</div><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+      $('#transcript').appendChild(el);
+      window.scrollTo(0, document.body.scrollHeight);
+    } else {
+      if(el) el.remove();
+    }
+  }
+
+  function renderDossierPanel(){
+    const panel = $('#dossierClaims');
+    panel.innerHTML = "";
+    state.claims.forEach(c=>{
+      const div = document.createElement('div');
+      div.className = 'dossier-claim ' + (c.status==='strong'?'strong':c.status==='weak'?'weak':'') + (c.id===state.currentClaimId?' active':'');
+      const color = c.confidence>=65?'var(--good)':c.confidence<=35?'var(--danger)':'var(--lamp)';
+      div.innerHTML = `<div class="dossier-claim-text">${escapeHtml(c.text)}</div><div class="meter"><div class="meter-fill" style="width:${c.confidence}%;background:${color}"></div></div>`;
+      panel.appendChild(div);
+    });
+  }
+
+  function updateProgress(){
+    const pct = Math.min(100, Math.round((state.turnCount/state.maxTurns)*100));
+    $('#progressFill').style.width = pct+"%";
+    $('#interviewPhase').textContent = "Round " + Math.min(state.turnCount+1, state.maxTurns);
+  }
+
+  const answerInput = $('#answerInput');
+  answerInput.addEventListener('input', ()=>{
+    answerInput.style.height = 'auto';
+    answerInput.style.height = Math.min(180, answerInput.scrollHeight)+'px';
+  });
+  answerInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      submitAnswer();
+    }
+  });
+  $('#sendAnswer').addEventListener('click', submitAnswer);
+
+  function submitAnswer(){
+    const val = answerInput.value.trim();
+    if(!val) return;
+    addMsg('subject', val);
+    renderTranscript();
+    state.apiHistory.push({role:"user", content: "CANDIDATE'S ANSWER: " + val});
+    answerInput.value = "";
+    answerInput.style.height = 'auto';
+    persistCurrentSession();
+    askNextQuestion(false);
+  }
+
+  $('#exitInterview').addEventListener('click', ()=>{
+    if(confirm("End the interrogation now and generate your report?")){
+      finishInterview();
+    }
+  });
+
+  // ---------- REPORT ----------
+  const REPORT_SYS = `You are compiling a final "Defense Report" after a mock interrogation-style interview. Given the full list of claims (with final confidence scores) and notes from the interview, write a structured, honest, specific assessment. Respond ONLY with raw JSON:
+{
+  "readiness_score": <integer 0-100, overall honest readiness for a real interview>,
+  "well_defended": [ {"claim_id":"...", "feedback":"one specific, encouraging sentence on why this held up"} ],
+  "needs_improvement": [ {"claim_id":"...", "feedback":"one specific, direct sentence on the gap and what evidence/detail is missing"} ],
+  "recommendations": ["3-5 short, concrete, actionable bullet points to strengthen weak claims before the real interview"]
+}`;
+
+  async function finishInterview(){
+    show('screen-loading');
+    $('#loadingText').innerHTML = 'Compiling your defense report<span class="dots"></span>';
+    const payload = "FINAL CLAIMS STATE:\n" + JSON.stringify(buildClaimsSnapshot()) +
+      "\n\nEXCHANGE NOTES:\n" + JSON.stringify(state.claims.map(c=>({id:c.id, exchanges:c.exchanges})));
+    try{
+      const raw = await callClaude([{role:"user", content: payload}], REPORT_SYS);
+      const parsed = safeParseJSON(raw);
+      state.report = parsed || { readiness_score: 50, well_defended:[], needs_improvement:[], recommendations:["Practice defending your weakest claims with specific metrics."] };
+    }catch(err){
+      state.report = { readiness_score: 50, well_defended:[], needs_improvement:[], recommendations:["Connection issue while compiling — your claims and transcript are saved; try exporting again shortly."] };
+    }
+    persistCurrentSession();
+    renderReport();
+    show('screen-report');
+  }
+
+  function renderReport(){
+    $('#readinessScore').textContent = (state.report.readiness_score||0) + "%";
+    const strongBox = $('#reportStrong');
+    const weakBox = $('#reportWeak');
+    strongBox.innerHTML = ""; weakBox.innerHTML = "";
+    (state.report.well_defended||[]).forEach(item=>{
+      const c = claimById(item.claim_id);
+      strongBox.innerHTML += `<div class="report-item"><div class="report-item-head"><div class="report-item-claim">${escapeHtml(c?c.text:item.claim_id)}</div><span class="stamp strong">strong</span></div><div class="report-item-feedback">${escapeHtml(item.feedback)}</div></div>`;
+    });
+    if((state.report.well_defended||[]).length===0){ strongBox.innerHTML = '<div class="empty-state">None fully proven yet — that\'s exactly what the next practice round is for.</div>'; }
+    (state.report.needs_improvement||[]).forEach(item=>{
+      const c = claimById(item.claim_id);
+      weakBox.innerHTML += `<div class="report-item"><div class="report-item-head"><div class="report-item-claim">${escapeHtml(c?c.text:item.claim_id)}</div><span class="stamp weak">weak</span></div><div class="report-item-feedback">${escapeHtml(item.feedback)}</div></div>`;
+    });
+    if((state.report.needs_improvement||[]).length===0){ weakBox.innerHTML = '<div class="empty-state">No major gaps flagged. Solid work.</div>'; }
+    const recs = $('#reportRecs');
+    recs.innerHTML = '<ul style="margin:0;padding-left:20px;line-height:1.8;font-size:13px;color:var(--paper-dim);">' +
+      (state.report.recommendations||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('') + '</ul>';
+  }
+
+  $('#downloadReport').addEventListener('click', ()=>{
+    let out = "DEFENSE REPORT\n" + new Date().toLocaleDateString() + "\n";
+    out += "Readiness Score: " + (state.report.readiness_score||0) + "%\n\n";
+    out += "WELL DEFENDED:\n";
+    (state.report.well_defended||[]).forEach(item=>{
+      const c = claimById(item.claim_id);
+      out += "- " + (c?c.text:item.claim_id) + "\n  " + item.feedback + "\n";
+    });
+    out += "\nNEEDS IMPROVEMENT:\n";
+    (state.report.needs_improvement||[]).forEach(item=>{
+      const c = claimById(item.claim_id);
+      out += "- " + (c?c.text:item.claim_id) + "\n  " + item.feedback + "\n";
+    });
+    out += "\nRECOMMENDATIONS:\n";
+    (state.report.recommendations||[]).forEach(r=> out += "- " + r + "\n");
+
+    const blob = new Blob([out], {type:"text/plain"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = "defense-report.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  $('#newSession').addEventListener('click', ()=>{
+    state = {
+      resumeText:"", claims:[], transcriptMsgs:[], apiHistory:[], currentClaimId:null,
+      turnCount:0, maxTurns:10, sessionId:null, createdAt:null, report:null
+    };
+    pasteArea.value = "";
+    fileChip.classList.remove('show');
+    fileInput.value = "";
+    genCaseNumber();
+    updateBeginBtn();
+    show('screen-landing');
+  });
+
+})();
+</script>
+</body>
+</html>
