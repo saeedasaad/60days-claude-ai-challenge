@@ -29,10 +29,6 @@ This exercise demonstrates how AI can guide developers through professional proj
 ```text
 Day-53/
 ├── README.md
-├── SETUP.md
-├── PROJECT-STRUCTURE.md
-├── ENVIRONMENT.md
-├── DAY3-SUMMARY.md
 └── screenshots/
     └── project_running.png
 ```
