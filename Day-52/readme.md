@@ -25,14 +25,10 @@ This exercise demonstrates how AI can act as a software architect, helping devel
 ```text
 Day-52/
 ├── README.md
-├── ARCHITECTURE.md
-├── SCHEMA.md
-├── API.md
-├── UI-WIREFRAMES.md
-├── PROJECT-STRUCTURE.md
-├── IMPLEMENTATION-BLUEPRINT.md
 └── screenshots/
-    └── system_design.png
+    ├── system_design_part1.png
+    ├── system_design_part2.png 
+    └── system_design_part3.png
 ```
 
 ---
@@ -107,7 +103,9 @@ These activities provide practical experience in software architecture, system d
 
 ### System Design Dashboard
 
-![System Design](./screenshots/system_design.png)
+![System Design](./screenshots/system_design_part1.png)
+![System Design](./screenshots/system_design_part2.png)
+![System Design](./screenshots/system_design_part3.png)
 
 ---
 
